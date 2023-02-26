@@ -10,9 +10,22 @@ SwiftUI-Version
 ![Badge - License](https://img.shields.io/badge/license-MIT-black?style=flat-square)  
 
 --- 
-## Example
+## Support Double
 ![Image](/Assets/double.mov.gif)  
 
+## Support Int
+![Image](/Assets/int.mov.gif)
+
+## Support Minus
+![Image](/Assets/minus.mov.gif)
+
+## Support NumberFormatter
+![Image](/Assets/numberformatter.mov.gif)
+
+## Support StringFormat
+![Image](/Assets/stringformatter.mov.gif)
+
+## Example
 ```swift
 struct ContentView: View {
   @State var value: Double = 58.090
@@ -44,13 +57,7 @@ extension Color {
 }
 ```
 
-![Image](/Assets/int.mov.gif)
-
-## Support Minus
-![Image](/Assets/minus.mov.gif)
-
 ## NumberFormatter Example
-![Image](/Assets/numberformatter.mov.gif)
 
 ```swift
 struct ContentView: View {
@@ -75,8 +82,7 @@ struct ContentView: View {
 }
 ```
 
-## StringFormatter Example
-![Image](/Assets/stringformatter.mov.gif)
+## StringFormat Example
 
 ```swift
 struct ContentView: View {
