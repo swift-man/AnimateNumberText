@@ -14,6 +14,7 @@ enum TextType {
 
 extension Array where Element == TextType {
   mutating func set(_ value: Character, index: Int) {
+    guard self.indices.contains(index) else { return }
     if let number = Int(String(value)) {
       self[index] = .number(number)
     } else {
