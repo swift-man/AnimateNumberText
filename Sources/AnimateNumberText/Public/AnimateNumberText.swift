@@ -26,9 +26,6 @@ public struct AnimateNumberText: View {
   @State
   private var animationRange: [TextType] = []
 
-  @State
-  private var animationUpdateTask: Task<Void, Never>?
-
   private enum AnimationTiming {
     static let resizeDuration: TimeInterval = 0.05
     static let resizeDelayNanoseconds: UInt64 = 50_000_000
@@ -107,24 +104,24 @@ public struct AnimateNumberText: View {
       animationRange = Array(repeating: .string(""), count: stringValue.count)
       settingAnimationRange(stringValue, isAnimate: false)
     }
-    .onChange(of: value) { newValue in
-      scheduleAnimationUpdate(for: newValue)
-    }
-    .onDisappear {
-      animationUpdateTask?.cancel()
+    .task(id: value) {
+      await scheduleAnimationUpdate(for: value)
     }
   }
 
-  private func scheduleAnimationUpdate(for newValue: Double) {
+  @MainActor
+  private func scheduleAnimationUpdate(for newValue: Double) async {
     let stringValue = formatter.string(from: newValue)
     resizeAnimationRange(to: stringValue.count,
                          duration: AnimationTiming.resizeDuration)
-    animationUpdateTask?.cancel()
-    animationUpdateTask = Task { @MainActor in
-      try? await Task.sleep(nanoseconds: AnimationTiming.resizeDelayNanoseconds)
-      guard !Task.isCancelled else { return }
-      settingAnimationRange(stringValue, isAnimate: true)
+
+    do {
+      try await Task.sleep(nanoseconds: AnimationTiming.resizeDelayNanoseconds)
+    } catch {
+      return
     }
+
+    settingAnimationRange(stringValue, isAnimate: true)
   }
   
   private func resizeAnimationRange(to count: Int, duration: TimeInterval) {
