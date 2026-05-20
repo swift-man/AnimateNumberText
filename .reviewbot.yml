@@ -75,8 +75,11 @@ review:
     - "yarn.lock"
     - "pnpm-lock.yaml"
 
-    # docs / generated DocC output
+    # generated documentation output
+    # Source DocC markdown under Sources/**/*.docc/**/*.md is reviewable.
+    # Built output is not: PR #4 moves generated documentation to swift-man/docs.
     - "docs/**"
+    - "*.doccarchive/**"
     - "**/*.doccarchive/**"
 
   always_review:
