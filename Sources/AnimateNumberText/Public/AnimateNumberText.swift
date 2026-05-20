@@ -25,6 +25,14 @@ public struct AnimateNumberText: View {
   // MARK: - Animation Properties
   @State
   private var animationRange: [TextType] = []
+
+  @State
+  private var animationUpdateTask: Task<Void, Never>?
+
+  private enum AnimationTiming {
+    static let resizeDuration: TimeInterval = 0.05
+    static let resizeDelayNanoseconds: UInt64 = 50_000_000
+  }
   
   /// Creates an animated number text view.
   ///
@@ -100,13 +108,22 @@ public struct AnimateNumberText: View {
       settingAnimationRange(stringValue, isAnimate: false)
     }
     .onChange(of: value) { newValue in
-      // MARK: - Handling Addition/Removal to Extra Value
-      let stringValue = formatter.string(from: newValue)
-      resizeAnimationRange(to: stringValue.count, duration: 0.05)
-      
-      DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-        settingAnimationRange(stringValue, isAnimate: true)
-      }
+      scheduleAnimationUpdate(for: newValue)
+    }
+    .onDisappear {
+      animationUpdateTask?.cancel()
+    }
+  }
+
+  private func scheduleAnimationUpdate(for newValue: Double) {
+    let stringValue = formatter.string(from: newValue)
+    resizeAnimationRange(to: stringValue.count,
+                         duration: AnimationTiming.resizeDuration)
+    animationUpdateTask?.cancel()
+    animationUpdateTask = Task { @MainActor in
+      try? await Task.sleep(nanoseconds: AnimationTiming.resizeDelayNanoseconds)
+      guard !Task.isCancelled else { return }
+      settingAnimationRange(stringValue, isAnimate: true)
     }
   }
   
