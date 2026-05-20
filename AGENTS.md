@@ -15,9 +15,9 @@
 
 `.reviewbot.yml`은 리뷰 프롬프트에서 생성물과 큰 바이너리 리소스를 빼기 위한 운영 설정입니다.
 
-- 리뷰 대상: Swift 소스, `Package.swift`, 테스트, GitHub Actions, DocC 원본 markdown, README, `AGENTS.md`, `.reviewbot.yml`
+- 리뷰 대상: Swift 소스, `Package.swift`, 테스트, GitHub Actions, DocC 원본 markdown, README, `AGENTS.md`, `.reviewbot.yml`, `.coderabbit.yaml`
 - 리뷰 제외: `.build/`, `DerivedData/`, `build/`, `dist/`, dependency 폴더, Xcode 사용자 메타데이터, `docs/`, `*.doccarchive/`, `Assets/`, 이미지/영상/오디오 파일
-- 항상 리뷰: `.reviewbot.yml`, `AGENTS.md`, `.gitignore`, `README.md`, `GeneratingDocumentationSite`, `Package.swift`, 문서 배포 workflow, DocC 원본 markdown
+- 항상 리뷰: `.reviewbot.yml`, `.coderabbit.yaml`, `AGENTS.md`, `.gitignore`, `README.md`, `GeneratingDocumentationSite`, `Package.swift`, 문서 배포 workflow, DocC 원본 markdown
 
 제외 목록을 넓힐 때는 실제 PR diff에서 불필요하게 모델 입력을 키운 경로인지 먼저 확인합니다. 소스 DocC markdown처럼 사람이 작성한 문서는 생성물과 구분해서 리뷰 대상에 남깁니다.
 

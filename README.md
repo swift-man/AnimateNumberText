@@ -27,21 +27,24 @@ SwiftUI-Version
 
 ## Example
 ```swift
+import SwiftUI
+import AnimateNumberText
+
 struct ContentView: View {
-  @State var value: Double = 58.090
-  @State var textColor: Color = .green
+  @State private var value: Double = 58.090
+  @State private var textColor: Color = .green
     
   var body: some View {
-    Section("Double") {
+    VStack {
       AnimateNumberText(font: .system(size: 55),
                         weight: .black,
                         value: $value,
                         textColor: $textColor)
+
+      Button("Change Value") {
+        value += 1
+        textColor = Color.random
       }
-    }
-    Button("Change Value") {
-      value += 1
-      textColor = Color.random
     }
   }
 }
@@ -60,8 +63,12 @@ extension Color {
 ## NumberFormatter Example
 
 ```swift
+import SwiftUI
+import AnimateNumberText
+
 struct ContentView: View {
-  @State var value: Double = 0
+  @State private var value: Double = 0
+  @State private var textColor: Color = .primary
   
   var numberFormatter: NumberFormatter {
     let numberFormatter = NumberFormatter()
@@ -72,11 +79,10 @@ struct ContentView: View {
   }
   
   var body: some View {
-    Section("NumberFormatter") {
+    VStack {
       AnimateNumberText(value: $value,
                         textColor: $textColor,
                         numberFormatter: numberFormatter)
-      }
     }
   }
 }
@@ -85,15 +91,18 @@ struct ContentView: View {
 ## StringFormat Example
 
 ```swift
+import SwiftUI
+import AnimateNumberText
+
 struct ContentView: View {
-  @State var value: Double = 0
+  @State private var value: Double = 0
+  @State private var textColor: Color = .primary
   
   var body: some View {
-    Section("StringFormatter") {
+    VStack {
       AnimateNumberText(value: $value,
                         textColor: $textColor,
                         stringFormatter: "%@ ms")
-      }
     }
   }
 }

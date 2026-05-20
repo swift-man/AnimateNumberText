@@ -8,6 +8,7 @@ review:
     - ".github/workflows/**/*.yml"
     - ".github/workflows/**/*.yaml"
     - ".reviewbot.yml"
+    - ".coderabbit.yaml"
     - ".gitignore"
     - "AGENTS.md"
     - "README.md"
@@ -84,6 +85,7 @@ review:
 
   always_review:
     - ".reviewbot.yml"
+    - ".coderabbit.yaml"
     - "AGENTS.md"
     - ".gitignore"
     - "README.md"
