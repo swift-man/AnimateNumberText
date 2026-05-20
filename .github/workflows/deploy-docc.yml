@@ -1,0 +1,36 @@
+name: Deploy DocC
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-docc-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-docs:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build DocC
+        run: |
+          ./GeneratingDocumentationSite
+          touch ./docs/.nojekyll
+
+      - name: Deploy to swift-man/docs
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          deploy_key: ${{ secrets.DOCS_DEPLOY_KEY }}
+          external_repository: swift-man/docs
+          publish_branch: main
+          publish_dir: ./docs
+          destination_dir: AnimateNumberText
+          full_commit_message: Deploy AnimateNumberText DocC from ${{ github.repository }}@${{ github.sha }}

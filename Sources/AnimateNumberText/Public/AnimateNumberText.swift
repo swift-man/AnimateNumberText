@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+/// A SwiftUI view that animates digit changes for a bound numeric value.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AnimateNumberText: View {
   private let formatter: AnimateNumberTextFomatter
@@ -25,6 +26,15 @@ public struct AnimateNumberText: View {
   @State
   private var animationRange: [TextType] = []
   
+  /// Creates an animated number text view.
+  ///
+  /// - Parameters:
+  ///   - font: The font used to render each character.
+  ///   - weight: The font weight used to render each character.
+  ///   - value: The numeric value to display and animate.
+  ///   - textColor: The text color used for the rendered value.
+  ///   - numberFormatter: An optional formatter for numeric presentation.
+  ///   - stringFormatter: An optional string format, such as `"%@ ms"`.
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public init(
     font: Font = .largeTitle,
