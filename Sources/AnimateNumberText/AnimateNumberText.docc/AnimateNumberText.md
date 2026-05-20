@@ -98,6 +98,12 @@ struct LatencyView: View {
 }
 ```
 
+## Compatibility
+
+Use ``AnimateNumberTextFormatter`` for custom formatting. The previous misspelled
+`AnimateNumberTextFomatter` name remains available as a deprecated compatibility
+alias so existing source code continues to compile.
+
 ## Topics
 
 ### Views
@@ -106,4 +112,4 @@ struct LatencyView: View {
 
 ### Formatting
 
-- ``AnimateNumberTextFomatter``
+- ``AnimateNumberTextFormatter``

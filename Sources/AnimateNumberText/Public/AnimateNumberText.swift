@@ -10,7 +10,7 @@ import SwiftUI
 /// A SwiftUI view that animates digit changes for a bound numeric value.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AnimateNumberText: View {
-  private let formatter: AnimateNumberTextFomatter
+  private let formatter: AnimateNumberTextFormatter
   
   // MARK: - Text Properties
   private let font: Font
@@ -48,8 +48,8 @@ public struct AnimateNumberText: View {
     self.weight = weight
     self._value = value
     self._textColor = textColor
-    self.formatter = AnimateNumberTextFomatter(numberFormatter: numberFormatter,
-                                               stringFormatter: stringFormatter)
+    self.formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
+                                                stringFormatter: stringFormatter)
   }
 
   public var body: some View {

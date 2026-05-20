@@ -1,5 +1,5 @@
 //
-//  AnimateNumberTextFomatter.swift
+//  AnimateNumberTextFormatter.swift
 //  
 //
 //  Created by SwiftMan on 2023/02/26.
@@ -9,7 +9,7 @@ import Foundation
 
 /// Formats numeric values for display in ``AnimateNumberText``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-public class AnimateNumberTextFomatter {
+public class AnimateNumberTextFormatter {
   let numberFormatter: NumberFormatter
   let stringFormatter: String?
   
