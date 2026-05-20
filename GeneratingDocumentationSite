@@ -42,6 +42,16 @@ fi
   --output-path "$DOCS_OUTPUT_PATH" \
   --hosting-base-path "$HOSTING_BASE_PATH"
 
+if [ ! -f "$DOCS_OUTPUT_PATH/index.html" ]; then
+  echo "error: DocC static hosting did not create $DOCS_OUTPUT_PATH/index.html" >&2
+  exit 1
+fi
+
+if [ ! -d "$DOCS_OUTPUT_PATH/data/documentation" ]; then
+  echo "error: DocC static hosting did not create documentation data" >&2
+  exit 1
+fi
+
 HOSTING_BASE_PATH="/${HOSTING_BASE_PATH#/}"
 export HOSTING_BASE_PATH
 perl -0pi -e '

@@ -141,7 +141,7 @@ public struct AnimateNumberText: View {
         var fraction = Double(index) * 0.15
         // Max = 0.5
         // Total = 1.5
-        fraction = (fraction > 0.5 ? 0.5 : fraction)
+        fraction = Swift.min(fraction, 0.5)
         
         withAnimation(.interactiveSpring(response: 0.45,
                                          dampingFraction: 1 + fraction,

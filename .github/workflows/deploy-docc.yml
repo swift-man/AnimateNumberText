@@ -33,4 +33,5 @@ jobs:
           publish_branch: main
           publish_dir: ./docs
           destination_dir: AnimateNumberText
+          keep_files: true
           full_commit_message: Deploy AnimateNumberText DocC from ${{ github.repository }}@${{ github.sha }}
