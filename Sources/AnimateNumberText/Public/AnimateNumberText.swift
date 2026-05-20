@@ -110,22 +110,15 @@ public struct AnimateNumberText: View {
     }
   }
   
-  private func resizeAnimationRange(to count: Int, duration: TimeInterval){
+  private func resizeAnimationRange(to count: Int, duration: TimeInterval) {
     let extra = count - animationRange.count
-    
-    if extra > 0 {
-      // Adding Extra Range
-      for _ in 0 ..< extra {
-        withAnimation(.easeIn(duration: duration)) {
-          animationRange.append(.string(""))
-        }
-      }
-    } else {
-      // Removing Extra Range
-      for _ in 0 ..< (-extra) {
-        withAnimation(.easeIn(duration: duration)) {
-          _ = animationRange.removeLast()
-        }
+    guard extra != 0 else { return }
+
+    withAnimation(.easeIn(duration: duration)) {
+      if extra > 0 {
+        animationRange.append(contentsOf: Array(repeating: .string(""), count: extra))
+      } else {
+        animationRange.removeLast(-extra)
       }
     }
   }
