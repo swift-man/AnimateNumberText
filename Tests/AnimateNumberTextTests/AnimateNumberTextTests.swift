@@ -5,69 +5,77 @@
 //  Created by SwiftMan on 2023/02/26.
 //
 
-import XCTest
+import Foundation
+import Testing
 @testable import AnimateNumberText
 
-final class AnimateNumberTextTests: XCTestCase {
-  var formatter: AnimateNumberTextFomatter!
-  
-  func testZero() throws {
-    formatter = AnimateNumberTextFomatter(numberFormatter: nil,
-                                          stringFormatter: nil)
-    
-    XCTAssertEqual("0", formatter.string(from: 0))
+struct AnimateNumberTextTests {
+  @Test
+  func zero() {
+    let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
+                                               stringFormatter: nil)
+
+    #expect(formatter.string(from: 0) == "0")
   }
-  
-  func testCurrencyNumberStyle() throws {
+
+  @Test
+  func currencyNumberStyle() {
     let numberFormatter = NumberFormatter()
-    numberFormatter.locale = Locale.current
+    numberFormatter.locale = Locale(identifier: "en_US")
     numberFormatter.numberStyle = .currency
     numberFormatter.maximumFractionDigits = 0
-    formatter = AnimateNumberTextFomatter(numberFormatter: numberFormatter,
-                                          stringFormatter: nil)
-    
-    XCTAssertEqual("$5,000,000", formatter.string(from: 5000000))
+    let formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
+                                               stringFormatter: nil)
+
+    #expect(formatter.string(from: 5000000) == "$5,000,000")
   }
-  
-  func testNumberStyle_koKR() throws {
+
+  @Test
+  func numberStyleKoKR() {
     let numberFormatter = NumberFormatter()
     numberFormatter.locale = Locale(identifier: "ko-KR")
     numberFormatter.numberStyle = .currency
-    formatter = AnimateNumberTextFomatter(numberFormatter: numberFormatter,
-                                          stringFormatter: nil)
-    
-    XCTAssertEqual("₩100", formatter.string(from: 100))
+    let formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
+                                               stringFormatter: nil)
+
+    #expect(formatter.string(from: 100) == "₩100")
   }
-  
-  func testDecimalNumberStyle() throws {
+
+  @Test
+  func decimalNumberStyle() {
     let numberFormatter = NumberFormatter()
+    numberFormatter.locale = Locale(identifier: "en_US")
     numberFormatter.numberStyle = .decimal
-    formatter = AnimateNumberTextFomatter(numberFormatter: numberFormatter,
-                                          stringFormatter: "%@원")
-    
-    XCTAssertEqual("10,000,000원", formatter.string(from: 10000000))
+    let formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
+                                               stringFormatter: "%@원")
+
+    #expect(formatter.string(from: 10000000) == "10,000,000원")
   }
-  
-  func testMaximumFractionDigits_zero() throws {
-    formatter = AnimateNumberTextFomatter(numberFormatter: nil,
-                                          stringFormatter: "%@원")
-    
-    XCTAssertEqual("10원", formatter.string(from: 10.23))
+
+  @Test
+  func maximumFractionDigitsZero() {
+    let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
+                                               stringFormatter: "%@원")
+
+    #expect(formatter.string(from: 10.23) == "10원")
   }
-  
-  func testStringFormat() throws {
-    formatter = AnimateNumberTextFomatter(numberFormatter: nil,
-                                          stringFormatter: "%@ ms")
-    
-    XCTAssertEqual("10 ms", formatter.string(from: 10.23))
+
+  @Test
+  func stringFormat() {
+    let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
+                                               stringFormatter: "%@ ms")
+
+    #expect(formatter.string(from: 10.23) == "10 ms")
   }
-  
-  func testMaximumFractionDigits_two() throws {
+
+  @Test
+  func maximumFractionDigitsTwo() {
     let numberFormatter = NumberFormatter()
+    numberFormatter.locale = Locale(identifier: "en_US")
     numberFormatter.maximumFractionDigits = 2
-    formatter = AnimateNumberTextFomatter(numberFormatter: numberFormatter,
-                                          stringFormatter: "%@ ms")
-    
-    XCTAssertEqual("10.23 ms", formatter.string(from: 10.23))
+    let formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
+                                               stringFormatter: "%@ ms")
+
+    #expect(formatter.string(from: 10.23) == "10.23 ms")
   }
 }

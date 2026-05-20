@@ -1,0 +1,69 @@
+#!/bin/sh
+set -eu
+
+TARGET_NAME="${TARGET_NAME:-AnimateNumberText}"
+PACKAGE_BUILD_PATH="${PACKAGE_BUILD_PATH:-.build}"
+SYMBOL_GRAPH_PATH="${SYMBOL_GRAPH_PATH:-$PACKAGE_BUILD_PATH/docc-symbolgraphs}"
+DOCC_CATALOG_PATH="${DOCC_CATALOG_PATH:-Sources/$TARGET_NAME/$TARGET_NAME.docc}"
+DOCC_ARCHIVE_PATH="${DOCC_ARCHIVE_PATH:-./$TARGET_NAME.doccarchive}"
+DOCS_OUTPUT_PATH="${DOCS_OUTPUT_PATH:-./docs}"
+HOSTING_BASE_PATH="${HOSTING_BASE_PATH:-$TARGET_NAME}"
+BUNDLE_IDENTIFIER="${BUNDLE_IDENTIFIER:-com.swift-man.$TARGET_NAME}"
+BUNDLE_VERSION="${BUNDLE_VERSION:-0.6.0}"
+MINIMUM_ACCESS_LEVEL="${MINIMUM_ACCESS_LEVEL:-public}"
+DOCC="$(xcrun --find docc)"
+
+rm -rf "$SYMBOL_GRAPH_PATH" "$DOCS_OUTPUT_PATH" "$DOCC_ARCHIVE_PATH"
+mkdir -p "$SYMBOL_GRAPH_PATH"
+
+swift build
+if ! swift package dump-symbol-graph --minimum-access-level "$MINIMUM_ACCESS_LEVEL"; then
+  echo "warning: dump-symbol-graph exited non-zero; continuing if $TARGET_NAME symbols were emitted" >&2
+fi
+
+find "$PACKAGE_BUILD_PATH" -path "*/symbolgraph/$TARGET_NAME*.symbols.json" \
+  ! -name "${TARGET_NAME}PackageTests.symbols.json" \
+  -exec cp {} "$SYMBOL_GRAPH_PATH/" \;
+
+if [ -z "$(find "$SYMBOL_GRAPH_PATH" -name '*.symbols.json' -print -quit)" ]; then
+  echo "error: no symbol graphs found for $TARGET_NAME" >&2
+  exit 1
+fi
+
+"$DOCC" convert "$DOCC_CATALOG_PATH" \
+  --additional-symbol-graph-dir "$SYMBOL_GRAPH_PATH" \
+  --fallback-display-name "$TARGET_NAME" \
+  --fallback-bundle-identifier "$BUNDLE_IDENTIFIER" \
+  --fallback-bundle-version "$BUNDLE_VERSION" \
+  --output-path "$DOCC_ARCHIVE_PATH"
+
+"$DOCC" process-archive \
+  transform-for-static-hosting "$DOCC_ARCHIVE_PATH" \
+  --output-path "$DOCS_OUTPUT_PATH" \
+  --hosting-base-path "$HOSTING_BASE_PATH"
+
+if [ ! -f "$DOCS_OUTPUT_PATH/index.html" ]; then
+  echo "error: DocC static hosting did not create $DOCS_OUTPUT_PATH/index.html" >&2
+  exit 1
+fi
+
+if [ ! -d "$DOCS_OUTPUT_PATH/data/documentation" ]; then
+  echo "error: DocC static hosting did not create documentation data" >&2
+  exit 1
+fi
+
+HOSTING_BASE_PATH="/${HOSTING_BASE_PATH#/}"
+export HOSTING_BASE_PATH
+perl -0pi -e '
+  my $base = $ENV{"HOSTING_BASE_PATH"};
+  s#href="/favicon\.ico"#href="$base/favicon.ico"#g;
+  s#href="/favicon\.svg"#href="$base/favicon.svg"#g;
+  s#var baseUrl = "/"#var baseUrl = "$base/"#g;
+  s#src="/js/#src="$base/js/#g;
+  s#href="/css/#href="$base/css/#g;
+' "$DOCS_OUTPUT_PATH/index.html"
+
+find "$DOCS_OUTPUT_PATH" -type f -name '*.js' \
+  -exec perl -0pi -e 's/[ \t]+$//mg' {} +
+
+rm -rf "$DOCC_ARCHIVE_PATH" "$SYMBOL_GRAPH_PATH"

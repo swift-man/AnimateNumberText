@@ -4,7 +4,7 @@ SwiftUI-Version
 
 ![Badge](https://img.shields.io/badge/swift-white.svg?style=flat-square&logo=Swift)
 ![Badge](https://img.shields.io/badge/SwiftUI-001b87.svg?style=flat-square&logo=Swift&logoColor=black)
-![Badge - Version](https://img.shields.io/badge/Version-0.5.0-1177AA?style=flat-square)
+![Badge - Version](https://img.shields.io/badge/Version-0.6.0-1177AA?style=flat-square)
 ![Badge - Swift Package Manager](https://img.shields.io/badge/SPM-compatible-orange?style=flat-square)
 ![Badge - Platform](https://img.shields.io/badge/platform-mac_12|ios_15|watchos_8|tvos_15-yellow?style=flat-square)
 ![Badge - License](https://img.shields.io/badge/license-MIT-black?style=flat-square)  
@@ -27,21 +27,24 @@ SwiftUI-Version
 
 ## Example
 ```swift
+import SwiftUI
+import AnimateNumberText
+
 struct ContentView: View {
-  @State var value: Double = 58.090
-  @State var textColor: Color = .green
+  @State private var value: Double = 58.090
+  @State private var textColor: Color = .green
     
   var body: some View {
-    Section("Double") {
+    VStack {
       AnimateNumberText(font: .system(size: 55),
                         weight: .black,
                         value: $value,
                         textColor: $textColor)
+
+      Button("Change Value") {
+        value += 1
+        textColor = Color.random
       }
-    }
-    Button("Change Value") {
-      value += 1
-      textColor = Color.random
     }
   }
 }
@@ -60,8 +63,12 @@ extension Color {
 ## NumberFormatter Example
 
 ```swift
+import SwiftUI
+import AnimateNumberText
+
 struct ContentView: View {
-  @State var value: Double = 0
+  @State private var value: Double = 0
+  @State private var textColor: Color = .primary
   
   var numberFormatter: NumberFormatter {
     let numberFormatter = NumberFormatter()
@@ -72,11 +79,10 @@ struct ContentView: View {
   }
   
   var body: some View {
-    Section("NumberFormatter") {
+    VStack {
       AnimateNumberText(value: $value,
                         textColor: $textColor,
                         numberFormatter: numberFormatter)
-      }
     }
   }
 }
@@ -85,29 +91,36 @@ struct ContentView: View {
 ## StringFormat Example
 
 ```swift
+import SwiftUI
+import AnimateNumberText
+
 struct ContentView: View {
-  @State var value: Double = 0
+  @State private var value: Double = 0
+  @State private var textColor: Color = .primary
   
   var body: some View {
-    Section("StringFormatter") {
+    VStack {
       AnimateNumberText(value: $value,
                         textColor: $textColor,
                         stringFormatter: "%@ ms")
-      }
     }
   }
 }
 ```
+
+## Documentation
+
+- [DocC Documentation](https://docs.gorani.me/AnimateNumberText/documentation/animatenumbertext/)
 
 ## Installation
 ### Swift Package Manager
 
 The [Swift Package Manager](https://swift.org/package-manager/) is a tool for automating the distribution of Swift code and is integrated into the `swift` compiler. 
 
-Once you have your Swift package set up, adding Alamofire as a dependency is as easy as adding it to the `dependencies` value of your `Package.swift`.
+Once you have your Swift package set up, adding AnimateNumberText as a dependency is as easy as adding it to the `dependencies` value of your `Package.swift`.
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.5.0")
+    .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.6.0")
 ]
 ```

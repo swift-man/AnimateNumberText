@@ -7,9 +7,10 @@
 
 import SwiftUI
 
+/// A SwiftUI view that animates digit changes for a bound numeric value.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public struct AnimateNumberText: View {
-  private let formatter: AnimateNumberTextFomatter
+  private let formatter: AnimateNumberTextFormatter
   
   // MARK: - Text Properties
   private let font: Font
@@ -25,6 +26,15 @@ public struct AnimateNumberText: View {
   @State
   private var animationRange: [TextType] = []
   
+  /// Creates an animated number text view.
+  ///
+  /// - Parameters:
+  ///   - font: The font used to render each character.
+  ///   - weight: The font weight used to render each character.
+  ///   - value: The numeric value to display and animate.
+  ///   - textColor: The text color used for the rendered value.
+  ///   - numberFormatter: An optional formatter for numeric presentation.
+  ///   - stringFormatter: An optional string format, such as `"%@ ms"`.
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public init(
     font: Font = .largeTitle,
@@ -38,8 +48,8 @@ public struct AnimateNumberText: View {
     self.weight = weight
     self._value = value
     self._textColor = textColor
-    self.formatter = AnimateNumberTextFomatter(numberFormatter: numberFormatter,
-                                               stringFormatter: stringFormatter)
+    self.formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
+                                                stringFormatter: stringFormatter)
   }
 
   public var body: some View {
@@ -100,22 +110,15 @@ public struct AnimateNumberText: View {
     }
   }
   
-  private func resizeAnimationRange(to count: Int, duration: TimeInterval){
+  private func resizeAnimationRange(to count: Int, duration: TimeInterval) {
     let extra = count - animationRange.count
-    
-    if extra > 0 {
-      // Adding Extra Range
-      for _ in 0 ..< extra {
-        withAnimation(.easeIn(duration: duration)) {
-          animationRange.append(.string(""))
-        }
-      }
-    } else {
-      // Removing Extra Range
-      for _ in 0 ..< (-extra) {
-        withAnimation(.easeIn(duration: duration)) {
-          _ = animationRange.removeLast()
-        }
+    guard extra != 0 else { return }
+
+    withAnimation(.easeIn(duration: duration)) {
+      if extra > 0 {
+        animationRange.append(contentsOf: Array(repeating: .string(""), count: extra))
+      } else {
+        animationRange.removeLast(-extra)
       }
     }
   }
@@ -131,7 +134,7 @@ public struct AnimateNumberText: View {
         var fraction = Double(index) * 0.15
         // Max = 0.5
         // Total = 1.5
-        fraction = (fraction > 0.5 ? 0.5 : fraction)
+        fraction = Swift.min(fraction, 0.5)
         
         withAnimation(.interactiveSpring(response: 0.45,
                                          dampingFraction: 1 + fraction,

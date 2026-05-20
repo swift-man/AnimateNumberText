@@ -1,0 +1,18 @@
+language: ko-KR
+
+tone_instructions: >
+  모든 리뷰 코멘트와 요약은 한국어로 작성하세요.
+  문제의 원인, 영향, 개선 방법을 간결하게 설명하세요.
+
+reviews:
+  profile: chill
+  review_status: true
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: false
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches:
+      - main
