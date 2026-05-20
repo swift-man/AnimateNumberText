@@ -44,6 +44,7 @@ struct AnimateNumberTextTests {
   @Test
   func decimalNumberStyle() {
     let numberFormatter = NumberFormatter()
+    numberFormatter.locale = Locale(identifier: "en_US")
     numberFormatter.numberStyle = .decimal
     let formatter = AnimateNumberTextFomatter(numberFormatter: numberFormatter,
                                               stringFormatter: "%@원")
@@ -70,6 +71,7 @@ struct AnimateNumberTextTests {
   @Test
   func maximumFractionDigitsTwo() {
     let numberFormatter = NumberFormatter()
+    numberFormatter.locale = Locale(identifier: "en_US")
     numberFormatter.maximumFractionDigits = 2
     let formatter = AnimateNumberTextFomatter(numberFormatter: numberFormatter,
                                               stringFormatter: "%@ ms")
