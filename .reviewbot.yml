@@ -1,0 +1,87 @@
+version: 1
+
+review:
+  include:
+    - "**/*.swift"
+    - "Package.swift"
+    - "**/Info.plist"
+    - ".github/workflows/**/*.yml"
+    - ".github/workflows/**/*.yaml"
+    - ".reviewbot.yml"
+    - ".gitignore"
+    - "AGENTS.md"
+    - "README.md"
+
+  exclude:
+    # dependency / build output
+    - "Pods/**"
+    - "Carthage/**"
+    - "Dependencies/**"
+    - ".accio/**"
+    - ".build/**"
+    - "DerivedData/**"
+    - "build/**"
+    - "dist/**"
+    - "node_modules/**"
+    - "vendor/**"
+    - ".swiftpm/xcode/**"
+    - "iOSInjectionProject/**"
+
+    # Xcode local / generated metadata
+    - "**/xcuserdata/**"
+    - "**/*.xcuserstate"
+    - "**/*.xcscmblueprint"
+    - "**/*.xccheckout"
+    - "**/*.moved-aside"
+    - "**/*.pbxuser"
+    - "**/*.mode1v3"
+    - "**/*.mode2v3"
+    - "**/*.perspectivev3"
+    - "**/*.hmap"
+    - "**/*.ipa"
+    - "**/*.dSYM"
+    - "**/*.dSYM.zip"
+
+    # generated files
+    - "**/Generated/**"
+    - "**/*.generated.swift"
+    - "**/*.pb.swift"
+    - "**/*.graphql.swift"
+    - "**/*+Generated.swift"
+
+    # resources
+    - "Assets/**"
+    - "**/*.xcassets/**"
+    - "**/*.png"
+    - "**/*.jpg"
+    - "**/*.jpeg"
+    - "**/*.gif"
+    - "**/*.webp"
+    - "**/*.pdf"
+    - "**/*.mp3"
+    - "**/*.wav"
+    - "**/*.m4a"
+    - "**/*.caf"
+    - "**/*.aiff"
+    - "**/*.mp4"
+    - "**/*.mov"
+
+    # lock files
+    - "**/Package.resolved"
+    - "Podfile.lock"
+    - "package-lock.json"
+    - "yarn.lock"
+    - "pnpm-lock.yaml"
+
+    # docs / generated DocC output
+    - "docs/**"
+    - "**/*.doccarchive/**"
+
+  always_review:
+    - ".reviewbot.yml"
+    - "AGENTS.md"
+    - ".gitignore"
+    - "README.md"
+    - "Package.swift"
+    - ".github/workflows/**/*.yml"
+    - ".github/workflows/**/*.yaml"
