@@ -14,7 +14,7 @@ Add AnimateNumberText to your Swift package dependencies.
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.6.1")
+  .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.6.2")
 ]
 ```
 
