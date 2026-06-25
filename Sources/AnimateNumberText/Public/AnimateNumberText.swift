@@ -30,10 +30,6 @@ public struct AnimateNumberText: View {
     static let resizeDuration: TimeInterval = 0.05
     static let resizeDelayNanoseconds: UInt64 = 50_000_000
   }
-
-  private enum Layout {
-    static let digitHorizontalBleed: CGFloat = 4
-  }
   
   /// Creates an animated number text view.
   ///
@@ -64,8 +60,6 @@ public struct AnimateNumberText: View {
   public var body: some View {
     HStack(spacing: 0) {
       ForEach(animationRange.indices, id: \.self) { index in
-        // MARK: To Find Text Size for Given Font
-        // Random Number
         switch animationRange[index] {
         case .string(let string):
           Text(string)
@@ -73,34 +67,7 @@ public struct AnimateNumberText: View {
             .fontWeight(weight)
             .foregroundColor(textColor)
         case .number:
-          Text("8")
-            .font(font)
-            .fontWeight(weight)
-            .padding(.horizontal, Layout.digitHorizontalBleed)
-            .opacity(0)
-            .overlay {
-              GeometryReader { proxy in
-                let size = proxy.size
-
-                VStack(spacing: 0) {
-                  // MARK: - Since Its Individual Value
-                  // We Need Form 0-9
-                  ForEach(0...9, id: \.self) { number in
-                    Text("\(number)")
-                      .font(font)
-                      .fontWeight(weight)
-                      .frame(width: size.width,
-                             height: size.height,
-                             alignment: .center)
-                      .foregroundColor(textColor)
-                  }
-                }
-                // MARK: - Setting Offset
-                .offset(y: settingOffset(at: index, height: size.height))
-              }
-              .clipped()
-            }
-            .padding(.horizontal, -Layout.digitHorizontalBleed)
+          digitColumn(at: index)
         }
       }
     }
@@ -141,6 +108,39 @@ public struct AnimateNumberText: View {
         animationRange.removeLast(-extra)
       }
     }
+  }
+
+  private func digitColumn(at index: Int) -> some View {
+    // Measure every digit so proportional fonts use the widest glyph without horizontal bleed.
+    ZStack {
+      ForEach(0...9, id: \.self) { number in
+        digitText(number)
+          .hidden()
+      }
+    }
+    .overlay {
+      GeometryReader { proxy in
+        let size = proxy.size
+
+        VStack(spacing: 0) {
+          ForEach(0...9, id: \.self) { number in
+            digitText(number)
+              .frame(width: size.width,
+                     height: size.height,
+                     alignment: .center)
+          }
+        }
+        .offset(y: settingOffset(at: index, height: size.height))
+      }
+      .clipped()
+    }
+  }
+
+  private func digitText(_ number: Int) -> some View {
+    Text("\(number)")
+      .font(font)
+      .fontWeight(weight)
+      .foregroundColor(textColor)
   }
     
   private func settingAnimationRange(_ string: String, isAnimate: Bool) {
