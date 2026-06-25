@@ -30,6 +30,10 @@ public struct AnimateNumberText: View {
     static let resizeDuration: TimeInterval = 0.05
     static let resizeDelayNanoseconds: UInt64 = 50_000_000
   }
+
+  private enum Layout {
+    static let digitHorizontalBleed: CGFloat = 4
+  }
   
   /// Creates an animated number text view.
   ///
@@ -72,6 +76,7 @@ public struct AnimateNumberText: View {
           Text("8")
             .font(font)
             .fontWeight(weight)
+            .padding(.horizontal, Layout.digitHorizontalBleed)
             .opacity(0)
             .overlay {
               GeometryReader { proxy in
@@ -95,6 +100,7 @@ public struct AnimateNumberText: View {
               }
               .clipped()
             }
+            .padding(.horizontal, -Layout.digitHorizontalBleed)
         }
       }
     }
