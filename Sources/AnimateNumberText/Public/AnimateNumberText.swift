@@ -26,7 +26,10 @@ public struct AnimateNumberText: View {
   private let animation: AnimateNumberTextAnimation
 
   @State
-  private var animationRange: [TextType] = []
+  private var animationRange: [TextColumn] = []
+
+  @State
+  private var displayedString: String?
   
   /// Creates an animated number text view.
   ///
@@ -59,32 +62,34 @@ public struct AnimateNumberText: View {
 
   public var body: some View {
     HStack(spacing: 0) {
-      ForEach(animationRange.indices, id: \.self) { index in
-        switch animationRange[index] {
+      ForEach(animationRange) { column in
+        switch column.value {
         case .string(let string):
           Text(string)
             .font(font)
             .fontWeight(weight)
             .foregroundColor(textColor)
         case .number:
-          digitColumn(at: index)
+          digitColumn(for: column.value)
         }
       }
     }
     .onAppear {
-      // MARK: - Loading Range
-      let stringValue = formatter.string(from: value)
-      animationRange = Array(repeating: .string(""), count: stringValue.count)
-      settingAnimationRange(stringValue, isAnimate: false)
+      initializeAnimationRangeIfNeeded(for: formatter.string(from: value))
     }
     .task(id: value) {
-      await scheduleAnimationUpdate(for: value)
+      await scheduleAnimationUpdateIfNeeded(for: value)
     }
   }
 
   @MainActor
-  private func scheduleAnimationUpdate(for newValue: Double) async {
+  private func scheduleAnimationUpdateIfNeeded(for newValue: Double) async {
     let stringValue = formatter.string(from: newValue)
+    if initializeAnimationRangeIfNeeded(for: stringValue) {
+      return
+    }
+    guard displayedString != stringValue else { return }
+
     resizeAnimationRange(to: stringValue.count,
                          animation: animation.resizeAnimation)
 
@@ -95,22 +100,35 @@ public struct AnimateNumberText: View {
     }
 
     settingAnimationRange(stringValue, isAnimate: true)
+    displayedString = stringValue
   }
-  
+
+  @MainActor
+  @discardableResult
+  private func initializeAnimationRangeIfNeeded(for stringValue: String) -> Bool {
+    guard displayedString == nil else { return false }
+
+    animationRange = (0..<stringValue.count).map { _ in TextColumn() }
+    settingAnimationRange(stringValue, isAnimate: false)
+    displayedString = stringValue
+    return true
+  }
+
+  @MainActor
   private func resizeAnimationRange(to count: Int, animation: Animation) {
     let extra = count - animationRange.count
     guard extra != 0 else { return }
 
     withAnimation(animation) {
       if extra > 0 {
-        animationRange.append(contentsOf: Array(repeating: .string(""), count: extra))
+        animationRange.append(contentsOf: (0..<extra).map { _ in TextColumn() })
       } else {
         animationRange.removeLast(-extra)
       }
     }
   }
 
-  private func digitColumn(at index: Int) -> some View {
+  private func digitColumn(for textType: TextType) -> some View {
     // Measure every digit so proportional fonts use the widest glyph without horizontal bleed.
     ZStack {
       ForEach(0...9, id: \.self) { number in
@@ -130,7 +148,7 @@ public struct AnimateNumberText: View {
                      alignment: .center)
           }
         }
-        .offset(y: settingOffset(at: index, height: size.height))
+        .offset(y: settingOffset(for: textType, height: size.height))
       }
       .clipped()
     }
@@ -142,7 +160,8 @@ public struct AnimateNumberText: View {
       .fontWeight(weight)
       .foregroundColor(textColor)
   }
-    
+
+  @MainActor
   private func settingAnimationRange(_ string: String, isAnimate: Bool) {
     for (index, value) in string.enumerated() {
       // IF First Value = 1
@@ -159,8 +178,8 @@ public struct AnimateNumberText: View {
     }
   }
   
-  private func settingOffset(at index: Int, height: CGFloat) -> CGFloat {
-    switch animationRange[index] {
+  private func settingOffset(for textType: TextType, height: CGFloat) -> CGFloat {
+    switch textType {
     case .string:
       return 0
       

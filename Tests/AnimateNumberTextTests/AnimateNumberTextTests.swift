@@ -53,11 +53,19 @@ struct AnimateNumberTextTests {
   }
 
   @Test
-  func maximumFractionDigitsZero() {
+  func defaultFormatterPreservesFractionDigits() {
     let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
                                                stringFormatter: "%@원")
 
-    #expect(formatter.string(from: 10.23) == "10원")
+    #expect(formatter.string(from: 10.23) == "10.23원")
+  }
+
+  @Test
+  func defaultFormatterDoesNotAddGroupingSeparators() {
+    let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
+                                               stringFormatter: nil)
+
+    #expect(formatter.string(from: 5000000) == "5000000")
   }
 
   @Test
@@ -65,7 +73,18 @@ struct AnimateNumberTextTests {
     let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
                                                stringFormatter: "%@ ms")
 
-    #expect(formatter.string(from: 10.23) == "10 ms")
+    #expect(formatter.string(from: 10.23) == "10.23 ms")
+  }
+
+  @Test
+  func customFormatterCanDropFractionDigits() {
+    let numberFormatter = NumberFormatter()
+    numberFormatter.locale = Locale(identifier: "en_US")
+    numberFormatter.maximumFractionDigits = 0
+    let formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
+                                               stringFormatter: "%@원")
+
+    #expect(formatter.string(from: 10.23) == "10원")
   }
 
   @Test

@@ -49,7 +49,9 @@ struct ContentView: View {
 
 ## Number Formatting
 
-Pass a `NumberFormatter` to display currency, decimal separators, or other Foundation formatting styles.
+Without a custom formatter, `AnimateNumberText` keeps fractional digits from
+`Double` values and does not add grouping separators. Pass a `NumberFormatter`
+to display currency, localized separators, or explicit fraction digit rules.
 
 ```swift
 import SwiftUI
