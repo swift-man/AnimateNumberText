@@ -93,6 +93,23 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func stringFormatIntegerPlaceholderFallsBackForNonFiniteValues() {
+    let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
+                                               stringFormatter: "%d")
+
+    #expect(formatter.string(from: Double.nan) == "NaN")
+    #expect(formatter.string(from: Double.infinity) == "+∞")
+  }
+
+  @Test
+  func stringFormatWithoutPlaceholderFallsBackToFormattedValue() {
+    let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
+                                               stringFormatter: " ms")
+
+    #expect(formatter.string(from: 10.23) == "10.23")
+  }
+
+  @Test
   func customFormatterCanDropFractionDigits() {
     let numberFormatter = NumberFormatter()
     numberFormatter.locale = Locale(identifier: "en_US")

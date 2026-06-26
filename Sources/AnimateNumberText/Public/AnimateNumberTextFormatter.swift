@@ -57,19 +57,47 @@ public class AnimateNumberTextFormatter {
     guard let argumentKinds = Self.formatArgumentKinds(for: stringFormatter) else {
       return stringValue
     }
+    guard !argumentKinds.isEmpty else {
+      return stringValue
+    }
 
-    let arguments = argumentKinds.map { kind -> CVarArg in
-      switch kind {
-      case .object:
-        return stringValue
-      case .floatingPoint:
-        return numberValue
-      case .integer:
-        return Int(numberValue)
-      }
+    guard let arguments = Self.formatArguments(for: argumentKinds,
+                                               stringValue: stringValue,
+                                               numberValue: numberValue) else {
+      return stringValue
     }
 
     return String(format: stringFormatter, arguments: arguments)
+  }
+
+  private static func formatArguments(for argumentKinds: [StringFormatArgumentKind],
+                                      stringValue: String,
+                                      numberValue: Double) -> [CVarArg]? {
+    var arguments: [CVarArg] = []
+
+    for kind in argumentKinds {
+      switch kind {
+      case .object:
+        arguments.append(stringValue)
+      case .floatingPoint:
+        arguments.append(numberValue)
+      case .integer:
+        guard let integerValue = integerValue(from: numberValue) else { return nil }
+        arguments.append(integerValue)
+      }
+    }
+
+    return arguments
+  }
+
+  private static func integerValue(from numberValue: Double) -> Int? {
+    guard numberValue.isFinite,
+          numberValue >= Double(Int.min),
+          numberValue < Double(Int.max) else {
+      return nil
+    }
+
+    return Int(numberValue)
   }
 
   private static func formatArgumentKinds(for stringFormatter: String) -> [StringFormatArgumentKind]? {
