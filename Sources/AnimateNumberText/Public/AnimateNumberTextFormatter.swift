@@ -12,6 +12,7 @@ import Foundation
 public class AnimateNumberTextFormatter {
   let numberFormatter: NumberFormatter
   let stringFormatter: String?
+  private let lock = NSLock()
   
   /// Creates a formatter for animated number text.
   ///
@@ -31,13 +32,20 @@ public class AnimateNumberTextFormatter {
   /// - Returns: A display string ready for ``AnimateNumberText``.
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public func string(from newValue: Double) -> String {
-    let stringValue = numberFormatter.string(from: NSNumber(value: newValue)) ?? "\(newValue)"
+    let stringValue = formattedNumber(from: newValue) ?? "\(newValue)"
     
     if let stringFormatter {
       return String(format: stringFormatter, stringValue)
     }
-    
+
     return stringValue
+  }
+
+  private func formattedNumber(from newValue: Double) -> String? {
+    lock.lock()
+    defer { lock.unlock() }
+
+    return numberFormatter.string(from: NSNumber(value: newValue))
   }
 
   private static func makeDefaultNumberFormatter() -> NumberFormatter {
