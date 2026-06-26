@@ -242,4 +242,16 @@ struct AnimateNumberTextTests {
     #expect(animation.resizeDuration == 0.1)
     #expect(animation.resizeDelay == 0.1)
   }
+
+  @Test
+  func resizeDelayNanosecondsClampsExtremeValues() {
+    let maximumWholeSeconds = TimeInterval(UInt64.max / 1_000_000_000)
+    let nearMaximum = AnimateNumberTextAnimation(resizeDelay: maximumWholeSeconds - 1)
+    let maximum = AnimateNumberTextAnimation(resizeDelay: maximumWholeSeconds)
+
+    #expect(nearMaximum.resizeDelayNanoseconds < UInt64.max)
+    #expect(maximum.resizeDelayNanoseconds == UInt64.max)
+    #expect(AnimateNumberTextAnimation(resizeDelay: .infinity).resizeDelayNanoseconds == 0)
+    #expect(AnimateNumberTextAnimation(resizeDelay: -1).resizeDelayNanoseconds == 0)
+  }
 }

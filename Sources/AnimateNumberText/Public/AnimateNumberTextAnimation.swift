@@ -103,10 +103,11 @@ extension AnimateNumberTextAnimation {
 
   var resizeDelayNanoseconds: UInt64 {
     let seconds = sanitized(resizeDelay)
-    guard seconds < TimeInterval(UInt64.max) / 1_000_000_000 else {
+    guard seconds < TimeConversion.maximumDelaySeconds else {
       return UInt64.max
     }
-    return UInt64(seconds * 1_000_000_000)
+
+    return UInt64((seconds * TimeConversion.nanosecondsPerSecond).rounded(.down))
   }
 
   func digitAnimation(at index: Int) -> Animation {
@@ -139,5 +140,10 @@ extension AnimateNumberTextAnimation {
   private func sanitized(_ value: TimeInterval) -> TimeInterval {
     guard value.isFinite else { return 0 }
     return Swift.max(0, value)
+  }
+
+  private enum TimeConversion {
+    static let nanosecondsPerSecond: TimeInterval = 1_000_000_000
+    static let maximumDelaySeconds = TimeInterval(UInt64.max / 1_000_000_000)
   }
 }
