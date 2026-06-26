@@ -10,8 +10,8 @@ import Foundation
 /// Formats numeric values for display in ``AnimateNumberText``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class AnimateNumberTextFormatter {
-  let numberFormatter: NumberFormatter
-  let stringFormatter: String?
+  private let numberFormatter: NumberFormatter
+  private let stringFormatter: String?
   private let lock = NSLock()
   
   /// Creates a formatter for animated number text.

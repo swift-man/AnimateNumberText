@@ -12,7 +12,7 @@ enum TextType: Equatable {
   case number(Int)
 
   init(_ value: Character) {
-    if let number = Int(String(value)) {
+    if let number = value.wholeNumberValue {
       self = .number(number)
     } else {
       self = .string(String(value))
