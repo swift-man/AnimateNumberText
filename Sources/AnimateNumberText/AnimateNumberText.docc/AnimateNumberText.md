@@ -14,7 +14,7 @@ Add AnimateNumberText to your Swift package dependencies.
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.0")
+  .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.1")
 ]
 ```
 
@@ -78,6 +78,25 @@ struct PriceView: View {
 }
 ```
 
+## Read-only Values
+
+Use a plain `Double` when the view only needs to display a value and the caller
+does not need binding-based updates. The default animation is used when
+`animation` is omitted.
+
+```swift
+import SwiftUI
+import AnimateNumberText
+
+struct SnapshotScoreView: View {
+  let value = 10.23
+
+  var body: some View {
+    AnimateNumberText(value: value)
+  }
+}
+```
+
 ## String Formatting
 
 Use `stringFormatter` when the formatted number needs a suffix or wrapper.
@@ -134,12 +153,6 @@ struct ScoreView: View {
 For values updated at high frequency, such as drag gestures or timers, throttle
 or debounce the bound value at the call site when every intermediate value does
 not need to be rendered.
-
-## Compatibility
-
-Use ``AnimateNumberTextFormatter`` for custom formatting. The previous misspelled
-`AnimateNumberTextFomatter` name remains available as a deprecated compatibility
-alias so existing source code continues to compile.
 
 ## Topics
 

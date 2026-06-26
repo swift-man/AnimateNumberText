@@ -4,7 +4,7 @@ SwiftUI-Version
 
 ![Badge](https://img.shields.io/badge/swift-white.svg?style=flat-square&logo=Swift)
 ![Badge](https://img.shields.io/badge/SwiftUI-001b87.svg?style=flat-square&logo=Swift&logoColor=black)
-![Badge - Version](https://img.shields.io/badge/Version-0.7.0-1177AA?style=flat-square)
+![Badge - Version](https://img.shields.io/badge/Version-0.7.1-1177AA?style=flat-square)
 ![Badge - Swift Package Manager](https://img.shields.io/badge/SPM-compatible-orange?style=flat-square)
 ![Badge - Platform](https://img.shields.io/badge/platform-mac_12|ios_15|watchos_8|tvos_15-yellow?style=flat-square)
 ![Badge - License](https://img.shields.io/badge/license-MIT-black?style=flat-square)  
@@ -92,6 +92,16 @@ struct ContentView: View {
 }
 ```
 
+## Read-only Value Example
+
+Use a plain `Double` when the view only needs to display a value and the caller
+does not need binding-based updates. The default animation is used when
+`animation` is omitted.
+
+```swift
+AnimateNumberText(value: 10.23)
+```
+
 ## StringFormat Example
 
 Prefer a `%@` placeholder such as `"%@ ms"` when wrapping the already formatted
@@ -147,6 +157,6 @@ Once you have your Swift package set up, adding AnimateNumberText as a dependenc
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.0")
+    .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.1")
 ]
 ```

@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import Testing
 @testable import AnimateNumberText
 
@@ -142,6 +143,14 @@ struct AnimateNumberTextTests {
                                                stringFormatter: "%@ ms")
 
     #expect(formatter.string(from: 10.23) == "10.23 ms")
+  }
+
+  @Test
+  @MainActor
+  func readOnlyValueInitializerCompiles() {
+    let view = AnimateNumberText(value: 10.23)
+
+    #expect(String(describing: type(of: view)) == "AnimateNumberText")
   }
 
   @Test
