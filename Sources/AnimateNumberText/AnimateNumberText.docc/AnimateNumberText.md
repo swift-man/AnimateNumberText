@@ -80,7 +80,11 @@ struct PriceView: View {
 
 ## String Formatting
 
-Use `stringFormatter` when the formatted number needs a suffix or wrapper.
+Use `stringFormatter` when the formatted number needs a suffix or wrapper. It
+receives the already formatted value as a `String`, so use a `%@` placeholder
+such as `"%@ ms"`. Use ``AnimateNumberTextFormatter`` with a custom
+`NumberFormatter` when numeric formatting rules such as currency or fraction
+digits need to change.
 
 ```swift
 import SwiftUI

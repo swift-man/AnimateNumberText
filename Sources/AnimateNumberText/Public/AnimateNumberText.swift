@@ -61,6 +61,8 @@ public struct AnimateNumberText: View {
   }
 
   public var body: some View {
+    let stringValue = formatter.string(from: value)
+
     HStack(spacing: 0) {
       ForEach(animationRange) { column in
         switch column.value {
@@ -75,16 +77,15 @@ public struct AnimateNumberText: View {
       }
     }
     .onAppear {
-      initializeAnimationRangeIfNeeded(for: formatter.string(from: value))
+      initializeAnimationRangeIfNeeded(for: stringValue)
     }
-    .task(id: value) {
-      await scheduleAnimationUpdateIfNeeded(for: value)
+    .task(id: stringValue) {
+      await scheduleAnimationUpdateIfNeeded(for: stringValue)
     }
   }
 
   @MainActor
-  private func scheduleAnimationUpdateIfNeeded(for newValue: Double) async {
-    let stringValue = formatter.string(from: newValue)
+  private func scheduleAnimationUpdateIfNeeded(for stringValue: String) async {
     if initializeAnimationRangeIfNeeded(for: stringValue) {
       return
     }

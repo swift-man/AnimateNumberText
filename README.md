@@ -94,6 +94,10 @@ struct ContentView: View {
 
 ## StringFormat Example
 
+`stringFormatter` receives the already formatted value as a `String`, so use a
+`%@` placeholder such as `"%@ ms"`. Use `NumberFormatter` when numeric
+formatting rules such as currency or fraction digits need to change.
+
 ```swift
 import SwiftUI
 import AnimateNumberText

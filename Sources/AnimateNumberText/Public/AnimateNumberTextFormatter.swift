@@ -18,7 +18,8 @@ public class AnimateNumberTextFormatter {
   ///
   /// - Parameters:
   ///   - numberFormatter: The formatter copied and used to convert numeric values into display strings.
-  ///   - stringFormatter: An optional string format applied to the formatted value.
+  ///   - stringFormatter: An optional string format applied to the formatted string value.
+  ///     Use a `%@` placeholder, such as `"%@ ms"`, because the argument is already a string.
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public init(numberFormatter: NumberFormatter?,
               stringFormatter: String?) {
