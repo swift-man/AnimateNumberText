@@ -49,22 +49,43 @@ struct TextColumn: Identifiable, Equatable {
 
 extension Array where Element == TextColumn {
   mutating func resizeForAnimation(to string: String) {
-    let extra = string.count - count
-    guard extra != 0 else { return }
+    let targetCharacters = string.map { $0 }
+    guard targetCharacters.count != count else { return }
 
-    if extra > 0 {
-      append(contentsOf: string.suffix(extra).map {
-        TextColumn(placeholderFor: $0)
-      })
-    } else {
-      removeLast(-extra)
+    let currentColumns = self
+    var preservedDigitColumns = currentColumns.filter(\.value.isNumber)
+    var targetColumns = targetCharacters.map { TextColumn(placeholderFor: $0) }
+
+    for targetIndex in targetCharacters.indices.reversed() {
+      guard targetColumns[targetIndex].value.isNumber else { continue }
+      guard let preservedColumn = preservedDigitColumns.popLast() else { break }
+
+      targetColumns[targetIndex] = preservedColumn
     }
+
+    for (index, character) in targetCharacters.enumerated() where !TextType(character).isNumber {
+      let targetValue = TextType(character)
+      if currentColumns.indices.contains(index),
+         currentColumns[index].value == targetValue {
+        targetColumns[index] = currentColumns[index]
+      } else {
+        targetColumns[index] = TextColumn(value: targetValue)
+      }
+    }
+
+    self = targetColumns
   }
 
   func canAnimateDigitChange(to value: Character, index: Int) -> Bool {
     guard indices.contains(index) else { return false }
 
     return self[index].value.isNumber && TextType(value).isNumber
+  }
+
+  func needsUpdate(to value: Character, index: Int) -> Bool {
+    guard indices.contains(index) else { return false }
+
+    return self[index].value != TextType(value)
   }
 
   mutating func set(_ value: Character, index: Int) {

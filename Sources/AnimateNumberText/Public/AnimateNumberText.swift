@@ -198,19 +198,30 @@ public struct AnimateNumberText: View {
 
   @MainActor
   private func settingAnimationRange(_ string: String, isAnimate: Bool) {
-    for (index, value) in string.enumerated() {
+    let characters = Array(string)
+    let immediateUpdates = characters.enumerated().filter { index, value in
+      animationRange.needsUpdate(to: value, index: index)
+        && (!isAnimate || !animationRange.canAnimateDigitChange(to: value, index: index))
+    }
+
+    if !immediateUpdates.isEmpty {
+      withoutAnimation {
+        for (index, value) in immediateUpdates {
+          animationRange.set(value, index: index)
+        }
+      }
+    }
+
+    guard isAnimate else { return }
+
+    for (index, value) in characters.enumerated()
+      where animationRange.needsUpdate(to: value, index: index)
+        && animationRange.canAnimateDigitChange(to: value, index: index) {
       // IF First Value = 1
       // Then Offset will be Applied for -1
       // So the text will move up to show 1 Value
-      
-      if isAnimate && animationRange.canAnimateDigitChange(to: value, index: index) {
-        withAnimation(animation.digitAnimation(at: index)) {
-          animationRange.set(value, index: index)
-        }
-      } else {
-        withoutAnimation {
-          animationRange.set(value, index: index)
-        }
+      withAnimation(animation.digitAnimation(at: index)) {
+        animationRange.set(value, index: index)
       }
     }
   }

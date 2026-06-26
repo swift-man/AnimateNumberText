@@ -182,7 +182,12 @@ struct AnimateNumberTextTests {
 
   @Test
   func resizeForAnimationUsesStablePlaceholders() {
-    var columns = [TextColumn(value: .number(0))]
+    var columns = [
+      TextColumn(value: .number(0)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
 
     columns.resizeForAnimation(to: "306.26 ms")
 
@@ -200,6 +205,26 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func resizeForAnimationKeepsFormattedSuffixAligned() {
+    var columns = [
+      TextColumn(value: .number(9)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
+
+    columns.resizeForAnimation(to: "10 ms")
+
+    #expect(columns.map(\.value) == [
+      .number(0),
+      .number(9),
+      .string(" "),
+      .string("m"),
+      .string("s")
+    ])
+  }
+
+  @Test
   func digitAnimationOnlyAppliesToDigitColumns() {
     let columns = [
       TextColumn(value: .number(0)),
@@ -209,6 +234,21 @@ struct AnimateNumberTextTests {
     #expect(columns.canAnimateDigitChange(to: "3", index: 0))
     #expect(!columns.canAnimateDigitChange(to: ".", index: 0))
     #expect(!columns.canAnimateDigitChange(to: "6", index: 1))
+  }
+
+  @Test
+  func unchangedFormattedSuffixDoesNotNeedUpdate() {
+    let columns = [
+      TextColumn(value: .number(0)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
+
+    #expect(columns.needsUpdate(to: "1", index: 0))
+    #expect(!columns.needsUpdate(to: " ", index: 1))
+    #expect(!columns.needsUpdate(to: "m", index: 2))
+    #expect(!columns.needsUpdate(to: "s", index: 3))
   }
 
   @Test
