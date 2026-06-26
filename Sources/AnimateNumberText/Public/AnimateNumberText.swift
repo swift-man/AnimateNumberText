@@ -90,7 +90,7 @@ public struct AnimateNumberText: View {
     }
     guard displayedString != stringValue else { return }
 
-    resizeAnimationRange(to: stringValue.count,
+    resizeAnimationRange(to: stringValue,
                          animation: animation.resizeAnimation)
 
     do {
@@ -108,20 +108,21 @@ public struct AnimateNumberText: View {
   private func initializeAnimationRangeIfNeeded(for stringValue: String) -> Bool {
     guard displayedString == nil else { return false }
 
-    animationRange = (0..<stringValue.count).map { _ in TextColumn() }
-    settingAnimationRange(stringValue, isAnimate: false)
+    animationRange = stringValue.map { TextColumn(value: TextType($0)) }
     displayedString = stringValue
     return true
   }
 
   @MainActor
-  private func resizeAnimationRange(to count: Int, animation: Animation) {
-    let extra = count - animationRange.count
+  private func resizeAnimationRange(to stringValue: String, animation: Animation) {
+    let extra = stringValue.count - animationRange.count
     guard extra != 0 else { return }
 
     withAnimation(animation) {
       if extra > 0 {
-        animationRange.append(contentsOf: (0..<extra).map { _ in TextColumn() })
+        animationRange.append(contentsOf: stringValue.suffix(extra).map {
+          TextColumn(value: TextType($0))
+        })
       } else {
         animationRange.removeLast(-extra)
       }

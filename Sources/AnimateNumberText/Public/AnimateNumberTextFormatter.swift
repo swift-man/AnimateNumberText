@@ -10,7 +10,7 @@ import Foundation
 /// Formats numeric values for display in ``AnimateNumberText``.
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 public class AnimateNumberTextFormatter {
-  let numberFormatter: NumberFormatter?
+  let numberFormatter: NumberFormatter
   let stringFormatter: String?
   
   /// Creates a formatter for animated number text.
@@ -21,7 +21,7 @@ public class AnimateNumberTextFormatter {
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public init(numberFormatter: NumberFormatter?,
               stringFormatter: String?) {
-    self.numberFormatter = numberFormatter
+    self.numberFormatter = numberFormatter ?? Self.makeDefaultNumberFormatter()
     self.stringFormatter = stringFormatter
   }
   
@@ -31,7 +31,7 @@ public class AnimateNumberTextFormatter {
   /// - Returns: A display string ready for ``AnimateNumberText``.
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public func string(from newValue: Double) -> String {
-    let stringValue = numberFormatter?.string(from: NSNumber(value: newValue)) ?? defaultString(from: newValue)
+    let stringValue = numberFormatter.string(from: NSNumber(value: newValue)) ?? "\(newValue)"
     
     if let stringFormatter {
       return String(format: stringFormatter, stringValue)
@@ -40,7 +40,7 @@ public class AnimateNumberTextFormatter {
     return stringValue
   }
 
-  private func defaultString(from newValue: Double) -> String {
+  private static func makeDefaultNumberFormatter() -> NumberFormatter {
     let formatter = NumberFormatter()
     formatter.locale = Locale(identifier: "en_US_POSIX")
     formatter.numberStyle = .decimal
@@ -48,6 +48,6 @@ public class AnimateNumberTextFormatter {
     formatter.minimumFractionDigits = 0
     formatter.maximumFractionDigits = 16
 
-    return formatter.string(from: NSNumber(value: newValue)) ?? "\(newValue)"
+    return formatter
   }
 }
