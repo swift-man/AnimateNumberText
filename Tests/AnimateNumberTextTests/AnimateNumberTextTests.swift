@@ -88,6 +88,19 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func formatterCopiesInjectedNumberFormatter() {
+    let numberFormatter = NumberFormatter()
+    numberFormatter.locale = Locale(identifier: "en_US")
+    numberFormatter.maximumFractionDigits = 0
+    let formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
+                                               stringFormatter: nil)
+
+    numberFormatter.maximumFractionDigits = 2
+
+    #expect(formatter.string(from: 10.23) == "10")
+  }
+
+  @Test
   func maximumFractionDigitsTwo() {
     let numberFormatter = NumberFormatter()
     numberFormatter.locale = Locale(identifier: "en_US")
