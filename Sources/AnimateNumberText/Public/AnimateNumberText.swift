@@ -88,7 +88,7 @@ public struct AnimateNumberText: View {
     if initializeAnimationRangeIfNeeded(for: stringValue) {
       return
     }
-    guard displayedString != stringValue else { return }
+    guard displayedString != stringValue || animationRange.count != stringValue.count else { return }
 
     resizeAnimationRange(to: stringValue,
                          animation: animation.resizeAnimation)
