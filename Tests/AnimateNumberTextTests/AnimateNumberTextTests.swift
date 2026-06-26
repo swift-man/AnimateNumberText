@@ -77,6 +77,22 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func stringFormatSupportsFloatingPointPlaceholder() {
+    let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
+                                               stringFormatter: "%.2f")
+
+    #expect(formatter.string(from: 10.236) == "10.24")
+  }
+
+  @Test
+  func stringFormatSupportsIntegerPlaceholder() {
+    let formatter = AnimateNumberTextFormatter(numberFormatter: nil,
+                                               stringFormatter: "%d")
+
+    #expect(formatter.string(from: 10.23) == "10")
+  }
+
+  @Test
   func customFormatterCanDropFractionDigits() {
     let numberFormatter = NumberFormatter()
     numberFormatter.locale = Locale(identifier: "en_US")
