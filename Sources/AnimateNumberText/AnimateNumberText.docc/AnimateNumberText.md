@@ -126,6 +126,10 @@ struct ScoreView: View {
 }
 ```
 
+For values updated at high frequency, such as drag gestures or timers, throttle
+or debounce the bound value at the call site when every intermediate value does
+not need to be rendered.
+
 ## Compatibility
 
 Use ``AnimateNumberTextFormatter`` for custom formatting. The previous misspelled

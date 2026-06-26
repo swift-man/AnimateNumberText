@@ -125,6 +125,10 @@ AnimateNumberText(value: $value,
                   animation: .easeOut(duration: 0.8))
 ```
 
+For values updated at high frequency, such as drag gestures or timers, throttle
+or debounce the bound value at the call site when every intermediate value does
+not need to be rendered.
+
 ## Documentation
 
 - [DocC Documentation](https://docs.gorani.me/AnimateNumberText/documentation/animatenumbertext/)
