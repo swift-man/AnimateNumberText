@@ -154,6 +154,24 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  @MainActor
+  func readOnlyValueInitializerAcceptsOptionalArguments() {
+    let numberFormatter = NumberFormatter()
+    numberFormatter.locale = Locale(identifier: "en_US")
+    numberFormatter.maximumFractionDigits = 2
+
+    let view = AnimateNumberText(font: .title,
+                                 weight: .bold,
+                                 value: 10.23,
+                                 textColor: .green,
+                                 numberFormatter: numberFormatter,
+                                 stringFormatter: "%@ ms",
+                                 animation: .easeOut(duration: 0.8))
+
+    #expect(String(describing: type(of: view)) == "AnimateNumberText")
+  }
+
+  @Test
   func defaultAnimationConfiguration() {
     let animation = AnimateNumberTextAnimation.default
 
