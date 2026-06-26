@@ -4,7 +4,7 @@ SwiftUI-Version
 
 ![Badge](https://img.shields.io/badge/swift-white.svg?style=flat-square&logo=Swift)
 ![Badge](https://img.shields.io/badge/SwiftUI-001b87.svg?style=flat-square&logo=Swift&logoColor=black)
-![Badge - Version](https://img.shields.io/badge/Version-0.6.2-1177AA?style=flat-square)
+![Badge - Version](https://img.shields.io/badge/Version-0.7.0-1177AA?style=flat-square)
 ![Badge - Swift Package Manager](https://img.shields.io/badge/SPM-compatible-orange?style=flat-square)
 ![Badge - Platform](https://img.shields.io/badge/platform-mac_12|ios_15|watchos_8|tvos_15-yellow?style=flat-square)
 ![Badge - License](https://img.shields.io/badge/license-MIT-black?style=flat-square)  
@@ -108,6 +108,19 @@ struct ContentView: View {
 }
 ```
 
+## Animation Example
+
+The default animation preserves the original rolling spring behavior. Pass
+`animation` only when you want to control the rolling speed or timing curve.
+Use `.easeIn(duration:)` to speed up over time, `.easeOut(duration:)` to slow
+down over time, or `.linear(duration:)` for constant speed.
+
+```swift
+AnimateNumberText(value: $value,
+                  textColor: $textColor,
+                  animation: .easeOut(duration: 0.8))
+```
+
 ## Documentation
 
 - [DocC Documentation](https://docs.gorani.me/AnimateNumberText/documentation/animatenumbertext/)
@@ -121,6 +134,6 @@ Once you have your Swift package set up, adding AnimateNumberText as a dependenc
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.6.2")
+    .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.0")
 ]
 ```

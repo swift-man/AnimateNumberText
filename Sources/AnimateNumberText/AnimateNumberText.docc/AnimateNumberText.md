@@ -14,7 +14,7 @@ Add AnimateNumberText to your Swift package dependencies.
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.6.2")
+  .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.0")
 ]
 ```
 
@@ -98,6 +98,32 @@ struct LatencyView: View {
 }
 ```
 
+## Animation Timing
+
+The default animation preserves the original rolling spring behavior. Pass an
+``AnimateNumberTextAnimation`` value when the rolling speed or timing curve
+needs to be customized. Use `.easeIn(duration:)` to speed up over time,
+`.easeOut(duration:)` to slow down over time, or `.linear(duration:)` for
+constant speed.
+
+```swift
+import SwiftUI
+import AnimateNumberText
+
+struct ScoreView: View {
+  @State private var value = 120.0
+  @State private var textColor = Color.primary
+
+  var body: some View {
+    AnimateNumberText(
+      value: $value,
+      textColor: $textColor,
+      animation: .easeOut(duration: 0.8)
+    )
+  }
+}
+```
+
 ## Compatibility
 
 Use ``AnimateNumberTextFormatter`` for custom formatting. The previous misspelled
@@ -113,3 +139,7 @@ alias so existing source code continues to compile.
 ### Formatting
 
 - ``AnimateNumberTextFormatter``
+
+### Animation
+
+- ``AnimateNumberTextAnimation``
