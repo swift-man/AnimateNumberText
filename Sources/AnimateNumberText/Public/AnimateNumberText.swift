@@ -99,6 +99,8 @@ public struct AnimateNumberText: View {
       return
     }
 
+    guard animationRange.count == stringValue.count else { return }
+
     settingAnimationRange(stringValue, isAnimate: true)
     displayedString = stringValue
   }
