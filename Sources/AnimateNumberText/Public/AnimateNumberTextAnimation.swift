@@ -67,6 +67,9 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   public let digitTiming: DigitTiming
 
   /// The animation duration used when the formatted string grows or shrinks.
+  ///
+  /// Defaults to `0` so digit rolling is not visually mixed with horizontal
+  /// layout resizing.
   public let resizeDuration: TimeInterval
 
   /// The delay between resizing the character range and rolling digits.
@@ -80,7 +83,7 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   ///   - resizeDelay: The delay between resizing the character range and rolling digits.
   public init(
     digitTiming: DigitTiming = .defaultSpring,
-    resizeDuration: TimeInterval = 0.05,
+    resizeDuration: TimeInterval = 0,
     resizeDelay: TimeInterval = 0.05
   ) {
     self.digitTiming = digitTiming
@@ -91,8 +94,11 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
 
 @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
 extension AnimateNumberTextAnimation {
-  var resizeAnimation: Animation {
-    .easeIn(duration: sanitized(resizeDuration))
+  var resizeAnimation: Animation? {
+    let duration = sanitized(resizeDuration)
+    guard duration > 0 else { return nil }
+
+    return .easeIn(duration: duration)
   }
 
   var resizeDelayNanoseconds: UInt64 {

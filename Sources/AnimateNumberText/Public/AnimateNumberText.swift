@@ -149,18 +149,17 @@ public struct AnimateNumberText: View {
   }
 
   @MainActor
-  private func resizeAnimationRange(to stringValue: String, animation: Animation) {
-    let extra = stringValue.count - animationRange.count
-    guard extra != 0 else { return }
+  private func resizeAnimationRange(to stringValue: String, animation: Animation?) {
+    let update = {
+      animationRange.resizeForAnimation(to: stringValue)
+    }
 
-    withAnimation(animation) {
-      if extra > 0 {
-        animationRange.append(contentsOf: stringValue.suffix(extra).map {
-          TextColumn(value: TextType($0))
-        })
-      } else {
-        animationRange.removeLast(-extra)
+    if let animation {
+      withAnimation(animation) {
+        update()
       }
+    } else {
+      withoutAnimation(update)
     }
   }
 
@@ -204,13 +203,24 @@ public struct AnimateNumberText: View {
       // Then Offset will be Applied for -1
       // So the text will move up to show 1 Value
       
-      if isAnimate {
+      if isAnimate && animationRange.canAnimateDigitChange(to: value, index: index) {
         withAnimation(animation.digitAnimation(at: index)) {
           animationRange.set(value, index: index)
         }
       } else {
-        animationRange.set(value, index: index)
+        withoutAnimation {
+          animationRange.set(value, index: index)
+        }
       }
+    }
+  }
+
+  private func withoutAnimation(_ updates: () -> Void) {
+    var transaction = Transaction(animation: nil)
+    transaction.disablesAnimations = true
+
+    withTransaction(transaction) {
+      updates()
     }
   }
   

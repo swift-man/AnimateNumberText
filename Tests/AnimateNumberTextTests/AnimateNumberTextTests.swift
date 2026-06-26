@@ -158,8 +158,39 @@ struct AnimateNumberTextTests {
     let animation = AnimateNumberTextAnimation.default
 
     #expect(animation.digitTiming == .defaultSpring)
-    #expect(animation.resizeDuration == 0.05)
+    #expect(animation.resizeDuration == 0)
     #expect(animation.resizeDelay == 0.05)
+  }
+
+  @Test
+  func resizeForAnimationUsesStablePlaceholders() {
+    var columns = [TextColumn(value: .number(0))]
+
+    columns.resizeForAnimation(to: "306.26 ms")
+
+    #expect(columns.map(\.value) == [
+      .number(0),
+      .number(0),
+      .number(0),
+      .string("."),
+      .number(0),
+      .number(0),
+      .string(" "),
+      .string("m"),
+      .string("s")
+    ])
+  }
+
+  @Test
+  func digitAnimationOnlyAppliesToDigitColumns() {
+    let columns = [
+      TextColumn(value: .number(0)),
+      TextColumn(value: .string("."))
+    ]
+
+    #expect(columns.canAnimateDigitChange(to: "3", index: 0))
+    #expect(!columns.canAnimateDigitChange(to: ".", index: 0))
+    #expect(!columns.canAnimateDigitChange(to: "6", index: 1))
   }
 
   @Test
