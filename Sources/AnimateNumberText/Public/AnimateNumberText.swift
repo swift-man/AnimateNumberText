@@ -60,6 +60,38 @@ public struct AnimateNumberText: View {
                                                 stringFormatter: stringFormatter)
   }
 
+  /// Creates an animated number text view for a read-only numeric value.
+  ///
+  /// Use this initializer when the caller does not need to mutate `value` or
+  /// `textColor` through bindings.
+  ///
+  /// - Parameters:
+  ///   - font: The font used to render each character.
+  ///   - weight: The font weight used to render each character.
+  ///   - value: The numeric value to display and animate.
+  ///   - textColor: The text color used for the rendered value.
+  ///   - numberFormatter: An optional formatter for numeric presentation.
+  ///   - stringFormatter: An optional string format, such as `"%@ ms"`.
+  ///   - animation: The animation configuration used for digit updates.
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  public init(
+    font: Font = .largeTitle,
+    weight: Font.Weight = .regular,
+    value: Double,
+    textColor: Color = .primary,
+    numberFormatter: NumberFormatter? = nil,
+    stringFormatter: String? = nil,
+    animation: AnimateNumberTextAnimation = .default
+  ) {
+    self.init(font: font,
+              weight: weight,
+              value: .constant(value),
+              textColor: .constant(textColor),
+              numberFormatter: numberFormatter,
+              stringFormatter: stringFormatter,
+              animation: animation)
+  }
+
   public var body: some View {
     let stringValue = formatter.string(from: value)
 
@@ -117,18 +149,17 @@ public struct AnimateNumberText: View {
   }
 
   @MainActor
-  private func resizeAnimationRange(to stringValue: String, animation: Animation) {
-    let extra = stringValue.count - animationRange.count
-    guard extra != 0 else { return }
+  private func resizeAnimationRange(to stringValue: String, animation: Animation?) {
+    let update = {
+      animationRange.resizeForAnimation(to: stringValue)
+    }
 
-    withAnimation(animation) {
-      if extra > 0 {
-        animationRange.append(contentsOf: stringValue.suffix(extra).map {
-          TextColumn(value: TextType($0))
-        })
-      } else {
-        animationRange.removeLast(-extra)
+    if let animation {
+      withAnimation(animation) {
+        update()
       }
+    } else {
+      withoutAnimation(update)
     }
   }
 
@@ -172,13 +203,24 @@ public struct AnimateNumberText: View {
       // Then Offset will be Applied for -1
       // So the text will move up to show 1 Value
       
-      if isAnimate {
+      if isAnimate && animationRange.canAnimateDigitChange(to: value, index: index) {
         withAnimation(animation.digitAnimation(at: index)) {
           animationRange.set(value, index: index)
         }
       } else {
-        animationRange.set(value, index: index)
+        withoutAnimation {
+          animationRange.set(value, index: index)
+        }
       }
+    }
+  }
+
+  private func withoutAnimation(_ updates: () -> Void) {
+    var transaction = Transaction(animation: nil)
+    transaction.disablesAnimations = true
+
+    withTransaction(transaction) {
+      updates()
     }
   }
   

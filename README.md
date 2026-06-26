@@ -92,6 +92,16 @@ struct ContentView: View {
 }
 ```
 
+## Read-only Value Example
+
+Use a plain `Double` when the view only needs to display a value and the caller
+does not need binding-based updates. The default animation is used when
+`animation` is omitted.
+
+```swift
+AnimateNumberText(value: 10.23)
+```
+
 ## StringFormat Example
 
 Prefer a `%@` placeholder such as `"%@ ms"` when wrapping the already formatted

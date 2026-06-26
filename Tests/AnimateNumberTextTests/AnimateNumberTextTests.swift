@@ -6,6 +6,7 @@
 //
 
 import Foundation
+import SwiftUI
 import Testing
 @testable import AnimateNumberText
 
@@ -145,12 +146,69 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  @MainActor
+  func readOnlyValueInitializerCompiles() {
+    let view = AnimateNumberText(value: 10.23)
+
+    #expect(String(describing: type(of: view)) == "AnimateNumberText")
+  }
+
+  @Test
+  @MainActor
+  func readOnlyValueInitializerAcceptsOptionalArguments() {
+    let numberFormatter = NumberFormatter()
+    numberFormatter.locale = Locale(identifier: "en_US")
+    numberFormatter.maximumFractionDigits = 2
+
+    let view = AnimateNumberText(font: .title,
+                                 weight: .bold,
+                                 value: 10.23,
+                                 textColor: .green,
+                                 numberFormatter: numberFormatter,
+                                 stringFormatter: "%@ ms",
+                                 animation: .easeOut(duration: 0.8))
+
+    #expect(String(describing: type(of: view)) == "AnimateNumberText")
+  }
+
+  @Test
   func defaultAnimationConfiguration() {
     let animation = AnimateNumberTextAnimation.default
 
     #expect(animation.digitTiming == .defaultSpring)
-    #expect(animation.resizeDuration == 0.05)
+    #expect(animation.resizeDuration == 0)
     #expect(animation.resizeDelay == 0.05)
+  }
+
+  @Test
+  func resizeForAnimationUsesStablePlaceholders() {
+    var columns = [TextColumn(value: .number(0))]
+
+    columns.resizeForAnimation(to: "306.26 ms")
+
+    #expect(columns.map(\.value) == [
+      .number(0),
+      .number(0),
+      .number(0),
+      .string("."),
+      .number(0),
+      .number(0),
+      .string(" "),
+      .string("m"),
+      .string("s")
+    ])
+  }
+
+  @Test
+  func digitAnimationOnlyAppliesToDigitColumns() {
+    let columns = [
+      TextColumn(value: .number(0)),
+      TextColumn(value: .string("."))
+    ]
+
+    #expect(columns.canAnimateDigitChange(to: "3", index: 0))
+    #expect(!columns.canAnimateDigitChange(to: ".", index: 0))
+    #expect(!columns.canAnimateDigitChange(to: "6", index: 1))
   }
 
   @Test
@@ -183,5 +241,17 @@ struct AnimateNumberTextTests {
                                                        blendDuration: 0.2))
     #expect(animation.resizeDuration == 0.1)
     #expect(animation.resizeDelay == 0.1)
+  }
+
+  @Test
+  func resizeDelayNanosecondsClampsExtremeValues() {
+    let maximumWholeSeconds = TimeInterval(UInt64.max / 1_000_000_000)
+    let nearMaximum = AnimateNumberTextAnimation(resizeDelay: maximumWholeSeconds - 1)
+    let maximum = AnimateNumberTextAnimation(resizeDelay: maximumWholeSeconds)
+
+    #expect(nearMaximum.resizeDelayNanoseconds < UInt64.max)
+    #expect(maximum.resizeDelayNanoseconds == UInt64.max)
+    #expect(AnimateNumberTextAnimation(resizeDelay: .infinity).resizeDelayNanoseconds == 0)
+    #expect(AnimateNumberTextAnimation(resizeDelay: -1).resizeDelayNanoseconds == 0)
   }
 }
