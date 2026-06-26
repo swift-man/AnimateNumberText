@@ -78,4 +78,45 @@ struct AnimateNumberTextTests {
 
     #expect(formatter.string(from: 10.23) == "10.23 ms")
   }
+
+  @Test
+  func defaultAnimationConfiguration() {
+    let animation = AnimateNumberTextAnimation.default
+
+    #expect(animation.digitTiming == .defaultSpring)
+    #expect(animation.resizeDuration == 0.05)
+    #expect(animation.resizeDelay == 0.05)
+  }
+
+  @Test
+  func durationBasedAnimationConfigurations() {
+    #expect(AnimateNumberTextAnimation.linear(duration: 0.2).digitTiming == .linear(duration: 0.2))
+    #expect(AnimateNumberTextAnimation.easeIn(duration: 0.3).digitTiming == .easeIn(duration: 0.3))
+    #expect(AnimateNumberTextAnimation.easeOut(duration: 0.4).digitTiming == .easeOut(duration: 0.4))
+    #expect(AnimateNumberTextAnimation.easeInOut(duration: 0.5).digitTiming == .easeInOut(duration: 0.5))
+
+    let spring = AnimateNumberTextAnimation.interactiveSpring(response: 0.6,
+                                                             dampingFraction: 0.8,
+                                                             blendDuration: 0.2)
+    #expect(spring.digitTiming == .interactiveSpring(response: 0.6,
+                                                    dampingFraction: 0.8,
+                                                    blendDuration: 0.2))
+  }
+
+  @Test
+  func customAnimationConfiguration() {
+    let animation = AnimateNumberTextAnimation(
+      digitTiming: .interactiveSpring(response: 0.6,
+                                      dampingFraction: 0.8,
+                                      blendDuration: 0.2),
+      resizeDuration: 0.1,
+      resizeDelay: 0.1
+    )
+
+    #expect(animation.digitTiming == .interactiveSpring(response: 0.6,
+                                                       dampingFraction: 0.8,
+                                                       blendDuration: 0.2))
+    #expect(animation.resizeDuration == 0.1)
+    #expect(animation.resizeDelay == 0.1)
+  }
 }

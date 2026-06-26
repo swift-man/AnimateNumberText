@@ -23,13 +23,10 @@ public struct AnimateNumberText: View {
   private var textColor: Color
 
   // MARK: - Animation Properties
+  private let animation: AnimateNumberTextAnimation
+
   @State
   private var animationRange: [TextType] = []
-
-  private enum AnimationTiming {
-    static let resizeDuration: TimeInterval = 0.05
-    static let resizeDelayNanoseconds: UInt64 = 50_000_000
-  }
   
   /// Creates an animated number text view.
   ///
@@ -40,6 +37,7 @@ public struct AnimateNumberText: View {
   ///   - textColor: The text color used for the rendered value.
   ///   - numberFormatter: An optional formatter for numeric presentation.
   ///   - stringFormatter: An optional string format, such as `"%@ ms"`.
+  ///   - animation: The animation configuration used for digit updates.
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public init(
     font: Font = .largeTitle,
@@ -47,12 +45,14 @@ public struct AnimateNumberText: View {
     value: Binding<Double>,
     textColor: Binding<Color>,
     numberFormatter: NumberFormatter? = nil,
-    stringFormatter: String? = nil
+    stringFormatter: String? = nil,
+    animation: AnimateNumberTextAnimation = .default
   ) {
     self.font = font
     self.weight = weight
     self._value = value
     self._textColor = textColor
+    self.animation = animation
     self.formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
                                                 stringFormatter: stringFormatter)
   }
@@ -86,10 +86,10 @@ public struct AnimateNumberText: View {
   private func scheduleAnimationUpdate(for newValue: Double) async {
     let stringValue = formatter.string(from: newValue)
     resizeAnimationRange(to: stringValue.count,
-                         duration: AnimationTiming.resizeDuration)
+                         animation: animation.resizeAnimation)
 
     do {
-      try await Task.sleep(nanoseconds: AnimationTiming.resizeDelayNanoseconds)
+      try await Task.sleep(nanoseconds: animation.resizeDelayNanoseconds)
     } catch {
       return
     }
@@ -97,11 +97,11 @@ public struct AnimateNumberText: View {
     settingAnimationRange(stringValue, isAnimate: true)
   }
   
-  private func resizeAnimationRange(to count: Int, duration: TimeInterval) {
+  private func resizeAnimationRange(to count: Int, animation: Animation) {
     let extra = count - animationRange.count
     guard extra != 0 else { return }
 
-    withAnimation(.easeIn(duration: duration)) {
+    withAnimation(animation) {
       if extra > 0 {
         animationRange.append(contentsOf: Array(repeating: .string(""), count: extra))
       } else {
@@ -150,15 +150,7 @@ public struct AnimateNumberText: View {
       // So the text will move up to show 1 Value
       
       if isAnimate {
-        // MARK: DampingFaction based on Index Value
-        var fraction = Double(index) * 0.15
-        // Max = 0.5
-        // Total = 1.5
-        fraction = Swift.min(fraction, 0.5)
-        
-        withAnimation(.interactiveSpring(response: 0.45,
-                                         dampingFraction: 1 + fraction,
-                                         blendDuration: 1 + fraction)) {
+        withAnimation(animation.digitAnimation(at: index)) {
           animationRange.set(value, index: index)
         }
       } else {
