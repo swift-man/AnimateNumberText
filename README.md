@@ -62,6 +62,10 @@ extension Color {
 
 ## NumberFormatter Example
 
+Without a custom formatter, `AnimateNumberText` keeps fractional digits from
+`Double` values and does not add grouping separators. Pass a `NumberFormatter`
+when you need currency, localized separators, or explicit fraction digit rules.
+
 ```swift
 import SwiftUI
 import AnimateNumberText
@@ -89,6 +93,11 @@ struct ContentView: View {
 ```
 
 ## StringFormat Example
+
+Prefer a `%@` placeholder such as `"%@ ms"` when wrapping the already formatted
+display string. Numeric placeholders such as `"%.2f"` and `"%d"` are applied to
+the original `Double` value for compatibility, but `NumberFormatter` remains
+the recommended path for currency, locale, and fraction digit rules.
 
 ```swift
 import SwiftUI
@@ -120,6 +129,10 @@ AnimateNumberText(value: $value,
                   textColor: $textColor,
                   animation: .easeOut(duration: 0.8))
 ```
+
+For values updated at high frequency, such as drag gestures or timers, throttle
+or debounce the bound value at the call site when every intermediate value does
+not need to be rendered.
 
 ## Documentation
 

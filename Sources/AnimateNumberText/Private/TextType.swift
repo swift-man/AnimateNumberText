@@ -7,19 +7,33 @@
 
 import Foundation
 
-enum TextType {
+enum TextType: Equatable {
   case string(String)
   case number(Int)
+
+  init(_ value: Character) {
+    if let number = value.wholeNumberValue {
+      self = .number(number)
+    } else {
+      self = .string(String(value))
+    }
+  }
 }
 
-extension Array where Element == TextType {
+struct TextColumn: Identifiable, Equatable {
+  let id: UUID
+  var value: TextType
+
+  init(value: TextType = .string("")) {
+    self.id = UUID()
+    self.value = value
+  }
+}
+
+extension Array where Element == TextColumn {
   mutating func set(_ value: Character, index: Int) {
     guard self.indices.contains(index) else { return }
-    
-    if let number = Int(String(value)) {
-      self[index] = .number(number)
-    } else {
-      self[index] = .string(String(value))
-    }
+
+    self[index].value = TextType(value)
   }
 }

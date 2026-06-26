@@ -49,7 +49,9 @@ struct ContentView: View {
 
 ## Number Formatting
 
-Pass a `NumberFormatter` to display currency, decimal separators, or other Foundation formatting styles.
+Without a custom formatter, `AnimateNumberText` keeps fractional digits from
+`Double` values and does not add grouping separators. Pass a `NumberFormatter`
+to display currency, localized separators, or explicit fraction digit rules.
 
 ```swift
 import SwiftUI
@@ -79,6 +81,11 @@ struct PriceView: View {
 ## String Formatting
 
 Use `stringFormatter` when the formatted number needs a suffix or wrapper.
+Prefer a `%@` placeholder such as `"%@ ms"` when wrapping the already formatted
+display string. Numeric placeholders such as `"%.2f"` and `"%d"` are applied to
+the original `Double` value for compatibility, but ``AnimateNumberTextFormatter``
+with a custom `NumberFormatter` remains the recommended path for currency,
+locale, and fraction digit rules.
 
 ```swift
 import SwiftUI
@@ -123,6 +130,10 @@ struct ScoreView: View {
   }
 }
 ```
+
+For values updated at high frequency, such as drag gestures or timers, throttle
+or debounce the bound value at the call site when every intermediate value does
+not need to be rendered.
 
 ## Compatibility
 
