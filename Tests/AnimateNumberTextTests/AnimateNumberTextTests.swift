@@ -294,6 +294,12 @@ struct AnimateNumberTextTests {
     #expect(columns.digitOrdinal(at: 2) == 2)
     #expect(columns.digitOrdinal(at: 3) == nil)
     #expect(columns.digitOrdinal(at: 4) == 3)
+    #expect(columns.digitOrdinalsByIndex() == [
+      0: 0,
+      1: 1,
+      2: 2,
+      4: 3
+    ])
   }
 
   @Test
@@ -389,5 +395,29 @@ struct AnimateNumberTextTests {
     #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 1) == -17)
     #expect(animation.reelTargetPosition(from: 5, to: 5, ordinal: 0) == 15)
     #expect(animation.reelTargetPosition(from: 5, to: 5, ordinal: 1) == -5)
+  }
+
+  @Test
+  func reelPositionsSpinUnchangedDigitsThroughUpdatePath() {
+    let columns = [
+      TextColumn(value: .number(3)),
+      TextColumn(value: .number(0)),
+      TextColumn(value: .number(1)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(9))
+    ]
+    let animation = AnimateNumberTextAnimation.reel(spinningDuration: 0.9,
+                                                    settleDuration: 0.25,
+                                                    revolutions: 1)
+    let currentPositions = columns.currentDigitPositions()
+
+    let nextPositions = columns.reelPositions(updatingTo: Swift.Array("301.9"),
+                                              animation: animation,
+                                              currentPositions: currentPositions)
+
+    #expect(nextPositions[columns[0].id] == 13)
+    #expect(nextPositions[columns[1].id] == -10)
+    #expect(nextPositions[columns[2].id] == 11)
+    #expect(nextPositions[columns[4].id] == -1)
   }
 }
