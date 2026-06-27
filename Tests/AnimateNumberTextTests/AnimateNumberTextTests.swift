@@ -195,6 +195,33 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func glyphBleedSanitizesNegativeInsets() {
+    let glyphBleed = EdgeInsets(top: -2,
+                                leading: 4,
+                                bottom: -6,
+                                trailing: 8).sanitizedGlyphBleed
+
+    #expect(glyphBleed.top == 0)
+    #expect(glyphBleed.leading == 4)
+    #expect(glyphBleed.bottom == 0)
+    #expect(glyphBleed.trailing == 8)
+  }
+
+  @Test
+  func glyphBleedClipShapeExpandsClipRect() {
+    let shape = GlyphBleedClipShape(glyphBleed: EdgeInsets(top: 2,
+                                                           leading: 4,
+                                                           bottom: 6,
+                                                           trailing: 8))
+    let rect = CGRect(x: 10, y: 20, width: 30, height: 40)
+
+    #expect(shape.path(in: rect).boundingRect == CGRect(x: 6,
+                                                       y: 18,
+                                                       width: 42,
+                                                       height: 48))
+  }
+
+  @Test
   func resizeForAnimationUsesStablePlaceholders() {
     var columns = [
       TextColumn(value: .number(0)),

@@ -398,7 +398,7 @@ private struct ReelDigitColumn: View, @preconcurrency Animatable {
   }
 }
 
-private extension EdgeInsets {
+extension EdgeInsets {
   var sanitizedGlyphBleed: EdgeInsets {
     EdgeInsets(top: Swift.max(0, top),
                leading: Swift.max(0, leading),
@@ -407,7 +407,7 @@ private extension EdgeInsets {
   }
 }
 
-private struct GlyphBleedClipShape: Shape {
+struct GlyphBleedClipShape: Shape {
   let glyphBleed: EdgeInsets
 
   func path(in rect: CGRect) -> Path {
