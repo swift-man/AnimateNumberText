@@ -188,6 +188,7 @@ struct AnimateNumberTextTests {
       TextColumn(value: .string("m")),
       TextColumn(value: .string("s"))
     ]
+    let suffixIDs = columns.suffix(3).map(\.id)
 
     columns.resizeForAnimation(to: "306.26 ms")
 
@@ -202,6 +203,7 @@ struct AnimateNumberTextTests {
       .string("m"),
       .string("s")
     ])
+    #expect(columns.suffix(3).map(\.id) == suffixIDs)
   }
 
   @Test
@@ -212,6 +214,7 @@ struct AnimateNumberTextTests {
       TextColumn(value: .string("m")),
       TextColumn(value: .string("s"))
     ]
+    let suffixIDs = columns.suffix(3).map(\.id)
 
     columns.resizeForAnimation(to: "10 ms")
 
@@ -222,6 +225,7 @@ struct AnimateNumberTextTests {
       .string("m"),
       .string("s")
     ])
+    #expect(columns.suffix(3).map(\.id) == suffixIDs)
   }
 
   @Test
@@ -237,6 +241,7 @@ struct AnimateNumberTextTests {
       TextColumn(value: .string("m")),
       TextColumn(value: .string("s"))
     ]
+    let suffixIDs = columns.suffix(3).map(\.id)
 
     columns.resizeForAnimation(to: "0 ms")
 
@@ -246,6 +251,7 @@ struct AnimateNumberTextTests {
       .string("m"),
       .string("s")
     ])
+    #expect(columns.suffix(3).map(\.id) == suffixIDs)
   }
 
   @Test

@@ -55,6 +55,7 @@ extension Array where Element == TextColumn {
 
     let currentColumns = self
     var preservedDigitColumns = currentColumns.filter(\.value.isNumber)
+    var preservedTextColumns = currentColumns.filter { !$0.value.isNumber }
     var targetColumns = targetCharacters.map { TextColumn(placeholderFor: $0) }
 
     for targetIndex in targetCharacters.indices.reversed() {
@@ -64,15 +65,14 @@ extension Array where Element == TextColumn {
       targetColumns[targetIndex] = preservedColumn
     }
 
-    for (index, character) in targetCharacters.enumerated() {
-      let targetValue = TextType(character)
+    for targetIndex in targetCharacters.indices.reversed() {
+      let targetValue = TextType(targetCharacters[targetIndex])
       guard !targetValue.isNumber else { continue }
 
-      if currentColumns.indices.contains(index),
-         currentColumns[index].value == targetValue {
-        targetColumns[index] = currentColumns[index]
+      if let currentIndex = preservedTextColumns.lastIndex(where: { $0.value == targetValue }) {
+        targetColumns[targetIndex] = preservedTextColumns.remove(at: currentIndex)
       } else {
-        targetColumns[index] = TextColumn(value: targetValue)
+        targetColumns[targetIndex] = TextColumn(value: targetValue)
       }
     }
 
