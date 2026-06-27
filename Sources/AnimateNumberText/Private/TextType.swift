@@ -12,7 +12,7 @@ enum TextType: Equatable {
   case number(Int)
 
   init(_ value: Character) {
-    if let number = value.wholeNumberValue {
+    if let number = value.asciiDigitValue {
       self = .number(number)
     } else {
       self = .string(String(value))
@@ -27,6 +27,15 @@ enum TextType: Equatable {
       return false
     }
   }
+
+  var digitValue: Int? {
+    switch self {
+    case .number(let number):
+      return number
+    case .string:
+      return nil
+    }
+  }
 }
 
 struct TextColumn: Identifiable, Equatable {
@@ -39,7 +48,7 @@ struct TextColumn: Identifiable, Equatable {
   }
 
   init(placeholderFor value: Character) {
-    if value.wholeNumberValue != nil {
+    if value.asciiDigitValue != nil {
       self.init(value: .number(0))
     } else {
       self.init(value: TextType(value))
@@ -49,22 +58,79 @@ struct TextColumn: Identifiable, Equatable {
 
 extension Array where Element == TextColumn {
   mutating func resizeForAnimation(to string: String) {
-    let extra = string.count - count
-    guard extra != 0 else { return }
+    let targetCharacters = Swift.Array<Character>(string)
+    // Equal-length updates keep their columns; settingAnimationRange handles value changes.
+    guard targetCharacters.count != count else { return }
 
-    if extra > 0 {
-      append(contentsOf: string.suffix(extra).map {
-        TextColumn(placeholderFor: $0)
-      })
-    } else {
-      removeLast(-extra)
+    let currentColumns = self
+    var preservedDigitColumns = currentColumns.filter(\.value.isNumber)
+    var preservedTextColumns = currentColumns.filter { !$0.value.isNumber }
+    var targetColumns = targetCharacters.map { TextColumn(placeholderFor: $0) }
+
+    for targetIndex in targetCharacters.indices.reversed() {
+      guard targetColumns[targetIndex].value.isNumber else { continue }
+      guard let preservedColumn = preservedDigitColumns.popLast() else { break }
+
+      targetColumns[targetIndex] = preservedColumn
     }
+
+    for targetIndex in targetCharacters.indices.reversed() {
+      let targetValue = TextType(targetCharacters[targetIndex])
+      guard !targetValue.isNumber else { continue }
+
+      // Reverse iteration + lastIndex keeps trailing duplicate separators aligned first.
+      if let currentIndex = preservedTextColumns.lastIndex(where: { $0.value == targetValue }) {
+        targetColumns[targetIndex] = preservedTextColumns.remove(at: currentIndex)
+      } else {
+        targetColumns[targetIndex] = TextColumn(value: targetValue)
+      }
+    }
+
+    self = targetColumns
+  }
+
+  var digitCount: Int {
+    filter(\.value.isNumber).count
+  }
+
+  func preservingReelPositions(_ positions: [UUID: Double]) -> [UUID: Double] {
+    var nextPositions: [UUID: Double] = [:]
+
+    for column in self {
+      guard let digit = column.value.digitValue else { continue }
+      nextPositions[column.id] = positions[column.id] ?? Double(digit)
+    }
+
+    return nextPositions
+  }
+
+  func currentDigitPositions() -> [UUID: Double] {
+    var nextPositions: [UUID: Double] = [:]
+
+    for column in self {
+      guard let digit = column.value.digitValue else { continue }
+      nextPositions[column.id] = Double(digit)
+    }
+
+    return nextPositions
   }
 
   func canAnimateDigitChange(to value: Character, index: Int) -> Bool {
     guard indices.contains(index) else { return false }
 
     return self[index].value.isNumber && TextType(value).isNumber
+  }
+
+  func needsUpdate(to value: Character, index: Int) -> Bool {
+    guard indices.contains(index) else { return false }
+
+    return self[index].value != TextType(value)
+  }
+
+  func digitOrdinal(at index: Int) -> Int? {
+    guard indices.contains(index), self[index].value.isNumber else { return nil }
+
+    return self[..<index].filter(\.value.isNumber).count
   }
 
   mutating func set(_ value: Character, index: Int) {
@@ -75,5 +141,18 @@ extension Array where Element == TextColumn {
     guard self.indices.contains(index) else { return }
 
     self[index].value = value
+  }
+}
+
+private extension Character {
+  var asciiDigitValue: Int? {
+    guard unicodeScalars.count == 1,
+          let scalar = unicodeScalars.first,
+          scalar.value >= 48,
+          scalar.value <= 57 else {
+      return nil
+    }
+
+    return Int(scalar.value - 48)
   }
 }

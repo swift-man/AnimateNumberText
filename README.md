@@ -129,15 +129,29 @@ struct ContentView: View {
 
 ## Animation Example
 
-The default animation preserves the original rolling spring behavior. Pass
-`animation` only when you want to control the rolling speed or timing curve.
-Use `.easeIn(duration:)` to speed up over time, `.easeOut(duration:)` to slow
-down over time, or `.linear(duration:)` for constant speed.
+The default animation uses `.smooth(duration:)`, a critically damped spring that
+accelerates then decelerates while preserving in-flight velocity. Pass
+`animation` only when you want to control the smooth rolling duration or use
+the reel style.
 
 ```swift
 AnimateNumberText(value: $value,
                   textColor: $textColor,
-                  animation: .easeOut(duration: 0.8))
+                  animation: .smooth(duration: 0.5))
+```
+
+Use `.reel(spinningDuration:settleDuration:revolutions:)` when each digit should spin through
+0...9 before settling. Digit columns start together, alternate direction from
+left to right, and stop sequentially by the settle duration. `spinningDuration` is the
+time the first digit spins before settling.
+
+```swift
+AnimateNumberText(value: $value,
+                  textColor: $textColor,
+                  stringFormatter: "%@ ms",
+                  animation: .reel(spinningDuration: 1.5,
+                                   settleDuration: 0.25,
+                                   revolutions: 1))
 ```
 
 For values updated at high frequency, such as drag gestures or timers, throttle

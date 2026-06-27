@@ -166,23 +166,31 @@ struct AnimateNumberTextTests {
                                  textColor: .green,
                                  numberFormatter: numberFormatter,
                                  stringFormatter: "%@ ms",
-                                 animation: .easeOut(duration: 0.8))
+                                 animation: .smooth(duration: 0.5))
 
     #expect(String(describing: type(of: view)) == "AnimateNumberText")
   }
 
   @Test
-  func defaultAnimationConfiguration() {
-    let animation = AnimateNumberTextAnimation.default
+  @MainActor
+  func readOnlyValueInitializerAcceptsReelAnimation() {
+    let view = AnimateNumberText(value: 301.9,
+                                 animation: .reel(spinningDuration: 0.9,
+                                                  settleDuration: 0.25,
+                                                  revolutions: 1))
 
-    #expect(animation.digitTiming == .defaultSpring)
-    #expect(animation.resizeDuration == 0)
-    #expect(animation.resizeDelay == 0.05)
+    #expect(String(describing: type(of: view)) == "AnimateNumberText")
   }
 
   @Test
   func resizeForAnimationUsesStablePlaceholders() {
-    var columns = [TextColumn(value: .number(0))]
+    var columns = [
+      TextColumn(value: .number(0)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
+    let suffixIDs = columns.suffix(3).map(\.id)
 
     columns.resizeForAnimation(to: "306.26 ms")
 
@@ -197,6 +205,63 @@ struct AnimateNumberTextTests {
       .string("m"),
       .string("s")
     ])
+    #expect(columns.suffix(3).map(\.id) == suffixIDs)
+  }
+
+  @Test
+  func resizeForAnimationKeepsFormattedSuffixAligned() {
+    var columns = [
+      TextColumn(value: .number(9)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
+    let suffixIDs = columns.suffix(3).map(\.id)
+
+    columns.resizeForAnimation(to: "10 ms")
+
+    #expect(columns.map(\.value) == [
+      .number(0),
+      .number(9),
+      .string(" "),
+      .string("m"),
+      .string("s")
+    ])
+    #expect(columns.suffix(3).map(\.id) == suffixIDs)
+  }
+
+  @Test
+  func resizeForAnimationKeepsFormattedSuffixAlignedWhenShrinking() {
+    var columns = [
+      TextColumn(value: .number(3)),
+      TextColumn(value: .number(0)),
+      TextColumn(value: .number(6)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(2)),
+      TextColumn(value: .number(6)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
+    let suffixIDs = columns.suffix(3).map(\.id)
+
+    columns.resizeForAnimation(to: "0 ms")
+
+    #expect(columns.map(\.value) == [
+      .number(6),
+      .string(" "),
+      .string("m"),
+      .string("s")
+    ])
+    #expect(columns.suffix(3).map(\.id) == suffixIDs)
+  }
+
+  @Test
+  func textTypeOnlyTreatsASCIIDigitsAsAnimatedNumbers() {
+    #expect(TextType("3") == .number(3))
+    #expect(TextType("٣") == .string("٣"))
+    #expect(TextType("Ⅻ") == .string("Ⅻ"))
+    #expect(TextColumn(placeholderFor: "٣").value == .string("٣"))
   }
 
   @Test
@@ -212,46 +277,117 @@ struct AnimateNumberTextTests {
   }
 
   @Test
-  func durationBasedAnimationConfigurations() {
-    #expect(AnimateNumberTextAnimation.linear(duration: 0.2).digitTiming == .linear(duration: 0.2))
-    #expect(AnimateNumberTextAnimation.easeIn(duration: 0.3).digitTiming == .easeIn(duration: 0.3))
-    #expect(AnimateNumberTextAnimation.easeOut(duration: 0.4).digitTiming == .easeOut(duration: 0.4))
-    #expect(AnimateNumberTextAnimation.easeInOut(duration: 0.5).digitTiming == .easeInOut(duration: 0.5))
+  func digitOrdinalSkipsFormattedCharacters() {
+    let columns = [
+      TextColumn(value: .number(3)),
+      TextColumn(value: .number(0)),
+      TextColumn(value: .number(1)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(9)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
 
-    let spring = AnimateNumberTextAnimation.interactiveSpring(response: 0.6,
-                                                             dampingFraction: 0.8,
-                                                             blendDuration: 0.2)
-    #expect(spring.digitTiming == .interactiveSpring(response: 0.6,
-                                                    dampingFraction: 0.8,
-                                                    blendDuration: 0.2))
+    #expect(columns.digitOrdinal(at: 0) == 0)
+    #expect(columns.digitOrdinal(at: 1) == 1)
+    #expect(columns.digitOrdinal(at: 2) == 2)
+    #expect(columns.digitOrdinal(at: 3) == nil)
+    #expect(columns.digitOrdinal(at: 4) == 3)
   }
 
   @Test
-  func customAnimationConfiguration() {
-    let animation = AnimateNumberTextAnimation(
-      digitTiming: .interactiveSpring(response: 0.6,
-                                      dampingFraction: 0.8,
-                                      blendDuration: 0.2),
-      resizeDuration: 0.1,
-      resizeDelay: 0.1
-    )
+  func unchangedFormattedSuffixDoesNotNeedUpdate() {
+    let columns = [
+      TextColumn(value: .number(0)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
 
-    #expect(animation.digitTiming == .interactiveSpring(response: 0.6,
-                                                       dampingFraction: 0.8,
-                                                       blendDuration: 0.2))
-    #expect(animation.resizeDuration == 0.1)
-    #expect(animation.resizeDelay == 0.1)
+    #expect(columns.needsUpdate(to: "1", index: 0))
+    #expect(!columns.needsUpdate(to: " ", index: 1))
+    #expect(!columns.needsUpdate(to: "m", index: 2))
+    #expect(!columns.needsUpdate(to: "s", index: 3))
   }
 
   @Test
-  func resizeDelayNanosecondsClampsExtremeValues() {
-    let maximumWholeSeconds = TimeInterval(UInt64.max / 1_000_000_000)
-    let nearMaximum = AnimateNumberTextAnimation(resizeDelay: maximumWholeSeconds - 1)
-    let maximum = AnimateNumberTextAnimation(resizeDelay: maximumWholeSeconds)
+  func preservingReelPositionsKeepsExistingContinuousOffsets() {
+    let columns = [
+      TextColumn(value: .number(3)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(9))
+    ]
+    let positions = [
+      columns[0].id: 13.0,
+      columns[2].id: -11.0
+    ]
 
-    #expect(nearMaximum.resizeDelayNanoseconds < UInt64.max)
-    #expect(maximum.resizeDelayNanoseconds == UInt64.max)
-    #expect(AnimateNumberTextAnimation(resizeDelay: .infinity).resizeDelayNanoseconds == 0)
-    #expect(AnimateNumberTextAnimation(resizeDelay: -1).resizeDelayNanoseconds == 0)
+    #expect(columns.preservingReelPositions(positions) == positions)
+  }
+
+  @Test
+  func currentDigitPositionsDropsStaleContinuousOffsets() {
+    let columns = [
+      TextColumn(value: .number(4)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(2))
+    ]
+    let positions = columns.currentDigitPositions()
+
+    #expect(positions[columns[0].id] == 4)
+    #expect(positions[columns[2].id] == 2)
+    #expect(positions.count == 2)
+  }
+
+  @Test
+  func smoothAnimationConfiguration() {
+    #expect(AnimateNumberTextAnimation.smooth() == .smooth(duration: 0.5))
+    #expect(AnimateNumberTextAnimation.smooth(duration: 0.3) != .smooth(duration: 0.5))
+  }
+
+  @Test
+  func reelAnimationConfiguration() {
+    #expect(AnimateNumberTextAnimation.reel() == .reel(spinningDuration: 0.9,
+                                                       settleDuration: 0.25,
+                                                       revolutions: 1))
+    #expect(AnimateNumberTextAnimation.reel(spinningDuration: 1.5) == .reel(spinningDuration: 1.5,
+                                                                            settleDuration: 0.25,
+                                                                            revolutions: 1))
+    #expect(AnimateNumberTextAnimation.reel(revolutions: -1) == .reel(revolutions: 0))
+    #expect(AnimateNumberTextAnimation.reel(spinningDuration: 0.9) != .smooth(duration: 0.9))
+  }
+
+  @Test
+  func reelDigitDurationsTreatSpinningDurationAsFirstSettleTime() {
+    let animation = AnimateNumberTextAnimation.reel(spinningDuration: 1.5,
+                                                    settleDuration: 0.25,
+                                                    revolutions: 1)
+
+    #expect(abs(animation.digitDuration(at: 0, digitCount: 4) - 1.5) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 1, digitCount: 4) - 1.75) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 2, digitCount: 4) - 2.0) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 3, digitCount: 4) - 2.25) < 0.000_001)
+  }
+
+  @Test
+  func reelDigitDurationsClampOrdinalToAvailableDigits() {
+    let animation = AnimateNumberTextAnimation.reel(spinningDuration: 1.5,
+                                                    settleDuration: 0.25,
+                                                    revolutions: 1)
+
+    #expect(abs(animation.digitDuration(at: 10, digitCount: 4) - 2.25) < 0.000_001)
+  }
+
+  @Test
+  func reelTargetPositionAlternatesDirectionAndSpinsUnchangedDigits() {
+    let animation = AnimateNumberTextAnimation.reel(spinningDuration: 0.9,
+                                                    settleDuration: 0.25,
+                                                    revolutions: 1)
+
+    #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 0) == 13)
+    #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 1) == -17)
+    #expect(animation.reelTargetPosition(from: 5, to: 5, ordinal: 0) == 15)
+    #expect(animation.reelTargetPosition(from: 5, to: 5, ordinal: 1) == -5)
   }
 }

@@ -126,11 +126,10 @@ struct LatencyView: View {
 
 ## Animation Timing
 
-The default animation preserves the original rolling spring behavior. Pass an
-``AnimateNumberTextAnimation`` value when the rolling speed or timing curve
-needs to be customized. Use `.easeIn(duration:)` to speed up over time,
-`.easeOut(duration:)` to slow down over time, or `.linear(duration:)` for
-constant speed.
+The default animation uses `.smooth(duration:)`, a critically damped spring that
+accelerates then decelerates while preserving in-flight velocity. Pass an
+``AnimateNumberTextAnimation`` value when the smooth rolling duration needs to
+be customized or when a rolling digit animation is preferred.
 
 ```swift
 import SwiftUI
@@ -144,10 +143,26 @@ struct ScoreView: View {
     AnimateNumberText(
       value: $value,
       textColor: $textColor,
-      animation: .easeOut(duration: 0.8)
+      animation: .smooth(duration: 0.5)
     )
   }
 }
+```
+
+Use `.reel(spinningDuration:settleDuration:revolutions:)` to make each digit spin through 0...9
+before settling. Digit columns start together, alternate direction from left to
+right, and stop sequentially by the settle duration. `spinningDuration` is the
+time the first digit spins before settling.
+
+```swift
+AnimateNumberText(
+  value: $value,
+  textColor: $textColor,
+  stringFormatter: "%@ ms",
+  animation: .reel(spinningDuration: 1.5,
+                   settleDuration: 0.25,
+                   revolutions: 1)
+)
 ```
 
 For values updated at high frequency, such as drag gestures or timers, throttle
