@@ -99,17 +99,19 @@ public struct AnimateNumberText: View {
 
   public var body: some View {
     let stringValue = formatter.string(from: value)
+    let columns = renderedColumns
 
     HStack(spacing: 0) {
-      ForEach(animationRange) { column in
-        switch column.value {
+      ForEach(columns) { renderedColumn in
+        switch renderedColumn.column.value {
         case .string(let string):
           Text(string)
             .font(font)
             .fontWeight(weight)
             .foregroundColor(textColor)
         case .number:
-          digitColumn(for: column)
+          digitColumn(for: renderedColumn.column,
+                      digitOrdinal: renderedColumn.digitOrdinal)
         }
       }
     }
@@ -155,16 +157,33 @@ public struct AnimateNumberText: View {
     }
   }
 
+  private var renderedColumns: [RenderedTextColumn] {
+    var digitOrdinal = 0
+
+    return animationRange.map { column in
+      let ordinal = column.value.isNumber ? digitOrdinal : nil
+
+      if column.value.isNumber {
+        digitOrdinal += 1
+      }
+
+      return RenderedTextColumn(column: column,
+                                digitOrdinal: ordinal)
+    }
+  }
+
   @ViewBuilder
-  private func digitColumn(for column: TextColumn) -> some View {
+  private func digitColumn(for column: TextColumn, digitOrdinal: Int?) -> some View {
     if animation.isReel {
       let number = column.value.digitValue ?? 0
       let position = reelPositions[column.id] ?? Double(number)
+      let ordinal = digitOrdinal ?? 0
 
       ReelDigitColumn(position: position,
                       font: font,
                       weight: weight,
                       textColor: textColor)
+        .animation(animation.digitAnimation(at: ordinal), value: position)
     } else {
       smoothDigitColumn(for: column.value)
     }
@@ -244,6 +263,7 @@ public struct AnimateNumberText: View {
   @MainActor
   private func settingReelAnimationRange(_ characters: [Character]) {
     synchronizeReelPositions()
+    var nextPositions = reelPositions
 
     for (index, value) in characters.enumerated()
       where animationRange.canAnimateDigitChange(to: value, index: index) {
@@ -259,11 +279,11 @@ public struct AnimateNumberText: View {
                                                         to: digit,
                                                         ordinal: digitOrdinal)
 
-      withAnimation(animation.digitAnimation(at: digitOrdinal)) {
-        reelPositions[columnID] = targetPosition
-        animationRange.set(value, index: index)
-      }
+      nextPositions[columnID] = targetPosition
+      animationRange.set(value, index: index)
     }
+
+    reelPositions = nextPositions
   }
 
   @MainActor
@@ -297,6 +317,16 @@ public struct AnimateNumberText: View {
     case .number(let number):
       return -CGFloat(number) * height
     }
+  }
+}
+
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct RenderedTextColumn: Identifiable {
+  let column: TextColumn
+  let digitOrdinal: Int?
+
+  var id: UUID {
+    column.id
   }
 }
 

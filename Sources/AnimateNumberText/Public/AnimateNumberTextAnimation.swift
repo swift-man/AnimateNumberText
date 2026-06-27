@@ -36,11 +36,12 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   ///   - duration: The time the first (leftmost) digit takes to settle.
   ///   - revolutions: The number of full 0–9 turns each digit makes before
   ///     landing on its value.
-  ///   - stagger: The extra settle time added per digit so places stop in
-  ///     sequence rather than all at once.
+  ///   - stagger: The extra settle time added per digit. With the default
+  ///     `0.25`, a value like `301.9` settles as `3`, then `0`, then `1`,
+  ///     then `9` at quarter-second intervals.
   public static func roll(_ duration: TimeInterval = 0.9,
                           revolutions: Int = 1,
-                          stagger: TimeInterval = 0.18) -> AnimateNumberTextAnimation {
+                          stagger: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
     AnimateNumberTextAnimation(style: .reel(duration: duration,
                                             revolutions: Swift.max(0, revolutions),
                                             stagger: stagger))
@@ -51,7 +52,7 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   /// Prefer ``roll(_:revolutions:stagger:)`` at new call sites.
   public static func reel(duration: TimeInterval = 0.9,
                           revolutions: Int = 1,
-                          stagger: TimeInterval = 0.18) -> AnimateNumberTextAnimation {
+                          stagger: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
     roll(duration,
          revolutions: revolutions,
          stagger: stagger)
@@ -109,14 +110,32 @@ extension AnimateNumberTextAnimation {
                                 blendDuration: 0)
 
     case .reel(let duration, _, let stagger):
-      let settle = sanitized(duration) + Double(Swift.max(0, ordinal)) * sanitized(stagger)
-      return .easeOut(duration: settle)
+      return .easeOut(duration: digitDuration(duration,
+                                              stagger: stagger,
+                                              ordinal: ordinal))
+    }
+  }
+
+  func digitDuration(at ordinal: Int) -> TimeInterval {
+    switch style {
+    case .smooth(let duration):
+      return sanitized(duration)
+    case .reel(let duration, _, let stagger):
+      return digitDuration(duration,
+                           stagger: stagger,
+                           ordinal: ordinal)
     }
   }
 
   private func sanitized(_ value: TimeInterval) -> TimeInterval {
     guard value.isFinite else { return 0 }
     return Swift.max(0, value)
+  }
+
+  private func digitDuration(_ duration: TimeInterval,
+                             stagger: TimeInterval,
+                             ordinal: Int) -> TimeInterval {
+    sanitized(duration) + Double(Swift.max(0, ordinal)) * sanitized(stagger)
   }
 
   private func reelDistance(from currentDigit: Double, to targetDigit: Double, ordinal: Int) -> Double {

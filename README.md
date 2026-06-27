@@ -150,7 +150,7 @@ AnimateNumberText(value: $value,
                   stringFormatter: "%@ ms",
                   animation: .reel(duration: 0.9,
                                    revolutions: 1,
-                                   stagger: 0.18))
+                                   stagger: 0.25))
 ```
 
 For values updated at high frequency, such as drag gestures or timers, throttle

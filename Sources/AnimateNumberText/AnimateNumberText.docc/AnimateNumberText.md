@@ -160,7 +160,7 @@ AnimateNumberText(
   stringFormatter: "%@ ms",
   animation: .roll(0.9,
                    revolutions: 1,
-                   stagger: 0.18)
+                   stagger: 0.25)
 )
 ```
 
