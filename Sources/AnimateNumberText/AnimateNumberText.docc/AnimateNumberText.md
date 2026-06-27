@@ -14,7 +14,7 @@ Add AnimateNumberText to your Swift package dependencies.
 
 ```swift
 dependencies: [
-  .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.1")
+  .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.2")
 ]
 ```
 
@@ -168,6 +168,24 @@ AnimateNumberText(
 For values updated at high frequency, such as drag gestures or timers, throttle
 or debounce the bound value at the call site when every intermediate value does
 not need to be rendered.
+
+## Custom Font Clipping
+
+Some script or brush fonts draw glyphs outside their measured digit column. Use
+`glyphBleed` to give each digit column extra clipping space without changing the
+default layout for regular fonts.
+
+```swift
+AnimateNumberText(
+  font: .custom("SignPainter", size: 48),
+  value: $value,
+  textColor: $textColor,
+  glyphBleed: EdgeInsets(top: 2,
+                         leading: 4,
+                         bottom: 2,
+                         trailing: 4)
+)
+```
 
 ## Topics
 

@@ -4,7 +4,7 @@ SwiftUI-Version
 
 ![Badge](https://img.shields.io/badge/swift-white.svg?style=flat-square&logo=Swift)
 ![Badge](https://img.shields.io/badge/SwiftUI-001b87.svg?style=flat-square&logo=Swift&logoColor=black)
-![Badge - Version](https://img.shields.io/badge/Version-0.7.1-1177AA?style=flat-square)
+![Badge - Version](https://img.shields.io/badge/Version-0.7.2-1177AA?style=flat-square)
 ![Badge - Swift Package Manager](https://img.shields.io/badge/SPM-compatible-orange?style=flat-square)
 ![Badge - Platform](https://img.shields.io/badge/platform-mac_12|ios_15|watchos_8|tvos_15-yellow?style=flat-square)
 ![Badge - License](https://img.shields.io/badge/license-MIT-black?style=flat-square)  
@@ -158,6 +158,22 @@ For values updated at high frequency, such as drag gestures or timers, throttle
 or debounce the bound value at the call site when every intermediate value does
 not need to be rendered.
 
+## Custom Font Clipping
+
+Some script or brush fonts draw glyphs outside their measured digit column. Use
+`glyphBleed` to give each digit column extra clipping space without changing the
+default layout for regular fonts.
+
+```swift
+AnimateNumberText(font: .custom("SignPainter", size: 48),
+                  value: $value,
+                  textColor: $textColor,
+                  glyphBleed: EdgeInsets(top: 2,
+                                         leading: 4,
+                                         bottom: 2,
+                                         trailing: 4))
+```
+
 ## Documentation
 
 - [DocC Documentation](https://docs.gorani.me/AnimateNumberText/documentation/animatenumbertext/)
@@ -171,6 +187,6 @@ Once you have your Swift package set up, adding AnimateNumberText as a dependenc
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.1")
+    .package(url: "https://github.com/swift-man/AnimateNumberText.git", from: "0.7.2")
 ]
 ```

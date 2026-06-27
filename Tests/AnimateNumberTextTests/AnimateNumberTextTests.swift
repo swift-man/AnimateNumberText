@@ -183,6 +183,53 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  @MainActor
+  func readOnlyValueInitializerAcceptsGlyphBleed() {
+    let view = AnimateNumberText(value: 10.23,
+                                 glyphBleed: EdgeInsets(top: 2,
+                                                        leading: 4,
+                                                        bottom: 2,
+                                                        trailing: 4))
+
+    #expect(String(describing: type(of: view)) == "AnimateNumberText")
+  }
+
+  @Test
+  func glyphBleedSanitizesNegativeInsets() {
+    let glyphBleed = EdgeInsets(top: -2,
+                                leading: 4,
+                                bottom: -6,
+                                trailing: 8).sanitizedGlyphBleed
+
+    #expect(glyphBleed.top == 0)
+    #expect(glyphBleed.leading == 4)
+    #expect(glyphBleed.bottom == 0)
+    #expect(glyphBleed.trailing == 8)
+  }
+
+  @Test
+  func glyphBleedClipShapeExpandsClipRect() {
+    let shape = GlyphBleedClipShape(glyphBleed: EdgeInsets(top: 2,
+                                                           leading: 4,
+                                                           bottom: 6,
+                                                           trailing: 8))
+    let rect = CGRect(x: 10, y: 20, width: 30, height: 40)
+
+    #expect(shape.path(in: rect).boundingRect == CGRect(x: 6,
+                                                       y: 18,
+                                                       width: 42,
+                                                       height: 48))
+  }
+
+  @Test
+  func glyphBleedClipShapeKeepsOriginalRectWithZeroBleed() {
+    let shape = GlyphBleedClipShape(glyphBleed: EdgeInsets())
+    let rect = CGRect(x: 10, y: 20, width: 30, height: 40)
+
+    #expect(shape.path(in: rect).boundingRect == rect)
+  }
+
+  @Test
   func resizeForAnimationUsesStablePlaceholders() {
     var columns = [
       TextColumn(value: .number(0)),
