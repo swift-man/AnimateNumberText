@@ -93,6 +93,18 @@ extension Array where Element == TextColumn {
     filter(\.value.isNumber).count
   }
 
+  func digitOrdinalsByIndex() -> [Int: Int] {
+    var ordinalsByIndex: [Int: Int] = [:]
+    var digitOrdinal = 0
+
+    for index in indices where self[index].value.isNumber {
+      ordinalsByIndex[index] = digitOrdinal
+      digitOrdinal += 1
+    }
+
+    return ordinalsByIndex
+  }
+
   func preservingReelPositions(_ positions: [UUID: Double]) -> [UUID: Double] {
     var nextPositions: [UUID: Double] = [:]
 
@@ -115,22 +127,50 @@ extension Array where Element == TextColumn {
     return nextPositions
   }
 
+  @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+  func reelPositions(updatingTo characters: [Character],
+                     animation: AnimateNumberTextAnimation,
+                     currentPositions: [UUID: Double]) -> [UUID: Double] {
+    let digitOrdinals = digitOrdinalsByIndex()
+    var nextPositions = preservingReelPositions(currentPositions)
+
+    for (index, character) in characters.enumerated() {
+      let targetValue = TextType(character)
+      guard canAnimateDigitChange(to: targetValue, index: index),
+            let digit = targetValue.digitValue,
+            let digitOrdinal = digitOrdinals[index] else {
+        continue
+      }
+
+      let column = self[index]
+      let currentPosition = nextPositions[column.id]
+        ?? Double(column.value.digitValue ?? digit)
+      nextPositions[column.id] = animation.reelTargetPosition(from: currentPosition,
+                                                              to: digit,
+                                                              ordinal: digitOrdinal)
+    }
+
+    return nextPositions
+  }
+
   func canAnimateDigitChange(to value: Character, index: Int) -> Bool {
+    canAnimateDigitChange(to: TextType(value), index: index)
+  }
+
+  func canAnimateDigitChange(to value: TextType, index: Int) -> Bool {
     guard indices.contains(index) else { return false }
 
-    return self[index].value.isNumber && TextType(value).isNumber
+    return self[index].value.isNumber && value.isNumber
   }
 
   func needsUpdate(to value: Character, index: Int) -> Bool {
-    guard indices.contains(index) else { return false }
-
-    return self[index].value != TextType(value)
+    needsUpdate(to: TextType(value), index: index)
   }
 
-  func digitOrdinal(at index: Int) -> Int? {
-    guard indices.contains(index), self[index].value.isNumber else { return nil }
+  func needsUpdate(to value: TextType, index: Int) -> Bool {
+    guard indices.contains(index) else { return false }
 
-    return self[..<index].filter(\.value.isNumber).count
+    return self[index].value != value
   }
 
   mutating func set(_ value: Character, index: Int) {

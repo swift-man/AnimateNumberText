@@ -254,11 +254,12 @@ public struct AnimateNumberText: View {
   @MainActor
   private func settingSmoothAnimationRange(_ characters: [Character]) {
     let digitCount = animationRange.digitCount
+    let digitOrdinals = animationRange.digitOrdinalsByIndex()
 
     for (index, value) in characters.enumerated()
       where animationRange.needsUpdate(to: value, index: index)
         && animationRange.canAnimateDigitChange(to: value, index: index) {
-      let digitOrdinal = animationRange.digitOrdinal(at: index) ?? index
+      let digitOrdinal = digitOrdinals[index] ?? index
 
       withAnimation(animation.digitAnimation(at: digitOrdinal,
                                              digitCount: digitCount)) {
@@ -272,23 +273,12 @@ public struct AnimateNumberText: View {
   @MainActor
   private func settingReelAnimationRange(_ characters: [Character]) {
     synchronizeReelPositions()
-    var nextPositions = reelPositions
+    let nextPositions = animationRange.reelPositions(updatingTo: characters,
+                                                     animation: animation,
+                                                     currentPositions: reelPositions)
 
     for (index, value) in characters.enumerated()
       where animationRange.canAnimateDigitChange(to: value, index: index) {
-      guard let digit = TextType(value).digitValue,
-            let digitOrdinal = animationRange.digitOrdinal(at: index) else {
-        continue
-      }
-
-      let columnID = animationRange[index].id
-      let currentPosition = reelPositions[columnID]
-        ?? Double(animationRange[index].value.digitValue ?? digit)
-      let targetPosition = animation.reelTargetPosition(from: currentPosition,
-                                                        to: digit,
-                                                        ordinal: digitOrdinal)
-
-      nextPositions[columnID] = targetPosition
       animationRange.set(value, index: index)
     }
 
