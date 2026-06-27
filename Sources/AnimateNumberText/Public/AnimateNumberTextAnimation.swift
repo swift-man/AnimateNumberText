@@ -73,6 +73,9 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   public let resizeDuration: TimeInterval
 
   /// The delay between resizing the character range and rolling digits.
+  ///
+  /// Defaults to `0` so formatted suffixes do not remain in a placeholder
+  /// state before digit rolling begins.
   public let resizeDelay: TimeInterval
 
   /// Creates an animation configuration.
@@ -84,7 +87,7 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   public init(
     digitTiming: DigitTiming = .defaultSpring,
     resizeDuration: TimeInterval = 0,
-    resizeDelay: TimeInterval = 0.05
+    resizeDelay: TimeInterval = 0
   ) {
     self.digitTiming = digitTiming
     self.resizeDuration = resizeDuration

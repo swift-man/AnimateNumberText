@@ -126,10 +126,13 @@ public struct AnimateNumberText: View {
     resizeAnimationRange(to: stringValue,
                          animation: animation.resizeAnimation)
 
-    do {
-      try await Task.sleep(nanoseconds: animation.resizeDelayNanoseconds)
-    } catch {
-      return
+    let resizeDelayNanoseconds = animation.resizeDelayNanoseconds
+    if resizeDelayNanoseconds > 0 {
+      do {
+        try await Task.sleep(nanoseconds: resizeDelayNanoseconds)
+      } catch {
+        return
+      }
     }
 
     guard animationRange.count == stringValue.count else { return }

@@ -177,7 +177,7 @@ struct AnimateNumberTextTests {
 
     #expect(animation.digitTiming == .defaultSpring)
     #expect(animation.resizeDuration == 0)
-    #expect(animation.resizeDelay == 0.05)
+    #expect(animation.resizeDelay == 0)
   }
 
   @Test
