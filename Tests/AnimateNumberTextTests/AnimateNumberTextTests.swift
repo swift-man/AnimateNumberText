@@ -222,6 +222,14 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func glyphBleedClipShapeKeepsOriginalRectWithZeroBleed() {
+    let shape = GlyphBleedClipShape(glyphBleed: EdgeInsets())
+    let rect = CGRect(x: 10, y: 20, width: 30, height: 40)
+
+    #expect(shape.path(in: rect).boundingRect == rect)
+  }
+
+  @Test
   func resizeForAnimationUsesStablePlaceholders() {
     var columns = [
       TextColumn(value: .number(0)),
