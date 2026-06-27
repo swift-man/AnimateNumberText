@@ -13,7 +13,7 @@ import SwiftUI
 public struct AnimateNumberTextAnimation: Equatable, Sendable {
   enum Style: Equatable, Sendable {
     case smooth(duration: TimeInterval)
-    case reel(duration: TimeInterval, revolutions: Int, stagger: TimeInterval)
+    case reel(duration: TimeInterval, revolutions: Int, settleInterval: TimeInterval)
   }
 
   let style: Style
@@ -36,26 +36,26 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   ///   - duration: The time the first (leftmost) digit takes to settle.
   ///   - revolutions: The number of full 0–9 turns each digit makes before
   ///     landing on its value.
-  ///   - stagger: The extra settle time added per digit. With the default
+  ///   - settleInterval: The extra settle time added per digit. With the default
   ///     `0.25`, a value like `301.9` settles as `3`, then `0`, then `1`,
   ///     then `9` at quarter-second intervals.
   public static func roll(_ duration: TimeInterval = 0.9,
                           revolutions: Int = 1,
-                          stagger: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
+                          settleInterval: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
     AnimateNumberTextAnimation(style: .reel(duration: duration,
                                             revolutions: Swift.max(0, revolutions),
-                                            stagger: stagger))
+                                            settleInterval: settleInterval))
   }
 
   /// Creates a slot-machine reel animation.
   ///
-  /// Prefer ``roll(_:revolutions:stagger:)`` at new call sites.
+  /// Prefer ``roll(_:revolutions:settleInterval:)`` at new call sites.
   public static func reel(duration: TimeInterval = 0.9,
                           revolutions: Int = 1,
-                          stagger: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
+                          settleInterval: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
     roll(duration,
          revolutions: revolutions,
-         stagger: stagger)
+         settleInterval: settleInterval)
   }
 
   private init(style: Style) {
@@ -101,7 +101,7 @@ extension AnimateNumberTextAnimation {
   /// The animation applied when the digit at `ordinal` rolls to its value.
   ///
   /// `ordinal` is the zero-based position among digit columns. In reel mode it
-  /// staggers the settle time so places come to rest one after another.
+  /// adds the settle interval so places come to rest one after another.
   func digitAnimation(at ordinal: Int) -> Animation {
     switch style {
     case .smooth(let duration):
@@ -109,9 +109,9 @@ extension AnimateNumberTextAnimation {
                                 dampingFraction: 1,
                                 blendDuration: 0)
 
-    case .reel(let duration, _, let stagger):
+    case .reel(let duration, _, let settleInterval):
       return .easeOut(duration: digitDuration(duration,
-                                              stagger: stagger,
+                                              settleInterval: settleInterval,
                                               ordinal: ordinal))
     }
   }
@@ -120,9 +120,9 @@ extension AnimateNumberTextAnimation {
     switch style {
     case .smooth(let duration):
       return sanitized(duration)
-    case .reel(let duration, _, let stagger):
+    case .reel(let duration, _, let settleInterval):
       return digitDuration(duration,
-                           stagger: stagger,
+                           settleInterval: settleInterval,
                            ordinal: ordinal)
     }
   }
@@ -133,9 +133,9 @@ extension AnimateNumberTextAnimation {
   }
 
   private func digitDuration(_ duration: TimeInterval,
-                             stagger: TimeInterval,
+                             settleInterval: TimeInterval,
                              ordinal: Int) -> TimeInterval {
-    sanitized(duration) + Double(Swift.max(0, ordinal)) * sanitized(stagger)
+    sanitized(duration) + Double(Swift.max(0, ordinal)) * sanitized(settleInterval)
   }
 
   private func reelDistance(from currentDigit: Double, to targetDigit: Double, ordinal: Int) -> Double {

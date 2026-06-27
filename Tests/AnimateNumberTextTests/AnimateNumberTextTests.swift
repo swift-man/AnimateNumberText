@@ -177,7 +177,7 @@ struct AnimateNumberTextTests {
     let view = AnimateNumberText(value: 301.9,
                                  animation: .reel(duration: 0.9,
                                                   revolutions: 1,
-                                                  stagger: 0.25))
+                                                  settleInterval: 0.25))
 
     #expect(String(describing: type(of: view)) == "AnimateNumberText")
   }
@@ -321,10 +321,10 @@ struct AnimateNumberTextTests {
   func rollAnimationConfiguration() {
     #expect(AnimateNumberTextAnimation.roll() == .reel(duration: 0.9,
                                                        revolutions: 1,
-                                                       stagger: 0.25))
+                                                       settleInterval: 0.25))
     #expect(AnimateNumberTextAnimation.roll(2.5) == .reel(duration: 2.5,
                                                           revolutions: 1,
-                                                          stagger: 0.25))
+                                                          settleInterval: 0.25))
     #expect(AnimateNumberTextAnimation.roll(revolutions: -1) == .reel(revolutions: 0))
     #expect(AnimateNumberTextAnimation.roll(0.9) != .smooth(duration: 0.9))
   }
@@ -333,7 +333,7 @@ struct AnimateNumberTextTests {
   func reelAnimationConfiguration() {
     #expect(AnimateNumberTextAnimation.reel() == .reel(duration: 0.9,
                                                        revolutions: 1,
-                                                       stagger: 0.25))
+                                                       settleInterval: 0.25))
     #expect(AnimateNumberTextAnimation.reel(revolutions: -1) == .reel(revolutions: 0))
     #expect(AnimateNumberTextAnimation.reel(duration: 0.9) != .smooth(duration: 0.9))
   }
@@ -342,7 +342,7 @@ struct AnimateNumberTextTests {
   func reelDigitDurationsStopAtQuarterSecondIntervals() {
     let animation = AnimateNumberTextAnimation.reel(duration: 0.9,
                                                     revolutions: 1,
-                                                    stagger: 0.25)
+                                                    settleInterval: 0.25)
 
     #expect(abs(animation.digitDuration(at: 0) - 0.9) < 0.000_001)
     #expect(abs(animation.digitDuration(at: 1) - 1.15) < 0.000_001)
@@ -354,7 +354,7 @@ struct AnimateNumberTextTests {
   func reelTargetPositionAlternatesDirectionAndSpinsUnchangedDigits() {
     let animation = AnimateNumberTextAnimation.reel(duration: 0.9,
                                                     revolutions: 1,
-                                                    stagger: 0.25)
+                                                    settleInterval: 0.25)
 
     #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 0) == 13)
     #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 1) == -17)

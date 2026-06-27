@@ -140,9 +140,9 @@ AnimateNumberText(value: $value,
                   animation: .smooth(duration: 0.5))
 ```
 
-Use `.reel(duration:revolutions:stagger:)` when each digit should spin through
+Use `.reel(duration:revolutions:settleInterval:)` when each digit should spin through
 0...9 before settling. Digit columns start together, alternate direction from
-left to right, and stop sequentially by adding the stagger time per digit.
+left to right, and stop sequentially by adding the settle interval per digit.
 
 ```swift
 AnimateNumberText(value: $value,
@@ -150,7 +150,7 @@ AnimateNumberText(value: $value,
                   stringFormatter: "%@ ms",
                   animation: .reel(duration: 0.9,
                                    revolutions: 1,
-                                   stagger: 0.25))
+                                   settleInterval: 0.25))
 ```
 
 For values updated at high frequency, such as drag gestures or timers, throttle

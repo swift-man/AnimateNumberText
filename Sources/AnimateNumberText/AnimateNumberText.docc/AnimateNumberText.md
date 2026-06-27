@@ -149,9 +149,9 @@ struct ScoreView: View {
 }
 ```
 
-Use `.roll(_:revolutions:stagger:)` to make each digit spin through 0...9
+Use `.roll(_:revolutions:settleInterval:)` to make each digit spin through 0...9
 before settling. Digit columns start together, alternate direction from left to
-right, and stop sequentially by adding the stagger time per digit.
+right, and stop sequentially by adding the settle interval per digit.
 
 ```swift
 AnimateNumberText(
@@ -160,7 +160,7 @@ AnimateNumberText(
   stringFormatter: "%@ ms",
   animation: .roll(0.9,
                    revolutions: 1,
-                   stagger: 0.25)
+                   settleInterval: 0.25)
 )
 ```
 
