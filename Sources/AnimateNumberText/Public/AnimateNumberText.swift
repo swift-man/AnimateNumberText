@@ -120,12 +120,12 @@ public struct AnimateNumberText: View {
       initializeAnimationRangeIfNeeded(for: stringValue)
     }
     .task(id: stringValue) {
-      await scheduleAnimationUpdateIfNeeded(for: stringValue)
+      scheduleAnimationUpdateIfNeeded(for: stringValue)
     }
   }
 
   @MainActor
-  private func scheduleAnimationUpdateIfNeeded(for stringValue: String) async {
+  private func scheduleAnimationUpdateIfNeeded(for stringValue: String) {
     if initializeAnimationRangeIfNeeded(for: stringValue) {
       return
     }
@@ -160,7 +160,7 @@ public struct AnimateNumberText: View {
 
   private var renderedColumns: [RenderedTextColumn] {
     var digitOrdinal = 0
-    let digitCount = animationRange.filter(\.value.isNumber).count
+    let digitCount = animationRange.digitCount
 
     return animationRange.map { column in
       let ordinal = column.value.isNumber ? digitOrdinal : nil
@@ -253,15 +253,20 @@ public struct AnimateNumberText: View {
 
   @MainActor
   private func settingSmoothAnimationRange(_ characters: [Character]) {
+    let digitCount = animationRange.digitCount
+
     for (index, value) in characters.enumerated()
       where animationRange.needsUpdate(to: value, index: index)
         && animationRange.canAnimateDigitChange(to: value, index: index) {
       let digitOrdinal = animationRange.digitOrdinal(at: index) ?? index
 
-      withAnimation(animation.digitAnimation(at: digitOrdinal)) {
+      withAnimation(animation.digitAnimation(at: digitOrdinal,
+                                             digitCount: digitCount)) {
         animationRange.set(value, index: index)
       }
     }
+
+    synchronizeReelPositionsToCurrentDigits()
   }
 
   @MainActor
@@ -294,12 +299,16 @@ public struct AnimateNumberText: View {
   private func synchronizeReelPositions() {
     guard animation.isReel else { return }
 
-    var nextPositions: [UUID: Double] = [:]
+    let nextPositions = animationRange.preservingReelPositions(reelPositions)
+    guard reelPositions != nextPositions else { return }
 
-    for column in animationRange {
-      guard let digit = column.value.digitValue else { continue }
-      nextPositions[column.id] = reelPositions[column.id] ?? Double(digit)
-    }
+    reelPositions = nextPositions
+  }
+
+  @MainActor
+  private func synchronizeReelPositionsToCurrentDigits() {
+    let nextPositions = animationRange.currentDigitPositions()
+    guard reelPositions != nextPositions else { return }
 
     reelPositions = nextPositions
   }

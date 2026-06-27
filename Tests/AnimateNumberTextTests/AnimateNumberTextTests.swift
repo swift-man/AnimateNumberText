@@ -312,6 +312,35 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func preservingReelPositionsKeepsExistingContinuousOffsets() {
+    let columns = [
+      TextColumn(value: .number(3)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(9))
+    ]
+    let positions = [
+      columns[0].id: 13.0,
+      columns[2].id: -11.0
+    ]
+
+    #expect(columns.preservingReelPositions(positions) == positions)
+  }
+
+  @Test
+  func currentDigitPositionsDropsStaleContinuousOffsets() {
+    let columns = [
+      TextColumn(value: .number(4)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(2))
+    ]
+    let positions = columns.currentDigitPositions()
+
+    #expect(positions[columns[0].id] == 4)
+    #expect(positions[columns[2].id] == 2)
+    #expect(positions.count == 2)
+  }
+
+  @Test
   func smoothAnimationConfiguration() {
     #expect(AnimateNumberTextAnimation.smooth() == .smooth(duration: 0.5))
     #expect(AnimateNumberTextAnimation.smooth(duration: 0.3) != .smooth(duration: 0.5))

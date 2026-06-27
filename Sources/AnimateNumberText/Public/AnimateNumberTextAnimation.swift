@@ -93,7 +93,7 @@ extension AnimateNumberTextAnimation {
   ///
   /// `ordinal` is the zero-based position among digit columns. In reel mode it
   /// adds the settle interval so places come to rest one after another.
-  func digitAnimation(at ordinal: Int, digitCount: Int = 1) -> Animation {
+  func digitAnimation(at ordinal: Int, digitCount: Int) -> Animation {
     switch style {
     case .smooth(let duration):
       return .interactiveSpring(response: sanitized(duration),
@@ -108,7 +108,7 @@ extension AnimateNumberTextAnimation {
     }
   }
 
-  func digitDuration(at ordinal: Int, digitCount: Int = 1) -> TimeInterval {
+  func digitDuration(at ordinal: Int, digitCount: Int) -> TimeInterval {
     switch style {
     case .smooth(let duration):
       return sanitized(duration)

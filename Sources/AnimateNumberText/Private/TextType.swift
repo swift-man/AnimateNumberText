@@ -78,6 +78,7 @@ extension Array where Element == TextColumn {
       let targetValue = TextType(targetCharacters[targetIndex])
       guard !targetValue.isNumber else { continue }
 
+      // Reverse iteration + lastIndex keeps trailing duplicate separators aligned first.
       if let currentIndex = preservedTextColumns.lastIndex(where: { $0.value == targetValue }) {
         targetColumns[targetIndex] = preservedTextColumns.remove(at: currentIndex)
       } else {
@@ -86,6 +87,32 @@ extension Array where Element == TextColumn {
     }
 
     self = targetColumns
+  }
+
+  var digitCount: Int {
+    filter(\.value.isNumber).count
+  }
+
+  func preservingReelPositions(_ positions: [UUID: Double]) -> [UUID: Double] {
+    var nextPositions: [UUID: Double] = [:]
+
+    for column in self {
+      guard let digit = column.value.digitValue else { continue }
+      nextPositions[column.id] = positions[column.id] ?? Double(digit)
+    }
+
+    return nextPositions
+  }
+
+  func currentDigitPositions() -> [UUID: Double] {
+    var nextPositions: [UUID: Double] = [:]
+
+    for column in self {
+      guard let digit = column.value.digitValue else { continue }
+      nextPositions[column.id] = Double(digit)
+    }
+
+    return nextPositions
   }
 
   func canAnimateDigitChange(to value: Character, index: Int) -> Bool {
