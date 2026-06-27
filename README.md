@@ -131,12 +131,26 @@ struct ContentView: View {
 
 The default animation uses `.smooth(duration:)`, a critically damped spring that
 accelerates then decelerates while preserving in-flight velocity. Pass
-`animation` only when you want to control the smooth rolling duration.
+`animation` only when you want to control the smooth rolling duration or use
+the reel style.
 
 ```swift
 AnimateNumberText(value: $value,
                   textColor: $textColor,
                   animation: .smooth(duration: 0.5))
+```
+
+Use `.reel(duration:revolutions:stagger:)` when each digit should spin through
+0...9 before settling. Digit columns start together, alternate direction from
+left to right, and stop sequentially by adding the stagger time per digit.
+
+```swift
+AnimateNumberText(value: $value,
+                  textColor: $textColor,
+                  stringFormatter: "%@ ms",
+                  animation: .reel(duration: 0.9,
+                                   revolutions: 1,
+                                   stagger: 0.18))
 ```
 
 For values updated at high frequency, such as drag gestures or timers, throttle

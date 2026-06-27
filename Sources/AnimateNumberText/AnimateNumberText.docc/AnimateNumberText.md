@@ -129,7 +129,7 @@ struct LatencyView: View {
 The default animation uses `.smooth(duration:)`, a critically damped spring that
 accelerates then decelerates while preserving in-flight velocity. Pass an
 ``AnimateNumberTextAnimation`` value when the smooth rolling duration needs to
-be customized.
+be customized or when a reel animation is preferred.
 
 ```swift
 import SwiftUI
@@ -147,6 +147,21 @@ struct ScoreView: View {
     )
   }
 }
+```
+
+Use `.reel(duration:revolutions:stagger:)` to make each digit spin through
+0...9 before settling. Digit columns start together, alternate direction from
+left to right, and stop sequentially by adding the stagger time per digit.
+
+```swift
+AnimateNumberText(
+  value: $value,
+  textColor: $textColor,
+  stringFormatter: "%@ ms",
+  animation: .reel(duration: 0.9,
+                   revolutions: 1,
+                   stagger: 0.18)
+)
 ```
 
 For values updated at high frequency, such as drag gestures or timers, throttle

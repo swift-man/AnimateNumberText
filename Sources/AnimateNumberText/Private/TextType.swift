@@ -27,6 +27,15 @@ enum TextType: Equatable {
       return false
     }
   }
+
+  var digitValue: Int? {
+    switch self {
+    case .number(let number):
+      return number
+    case .string:
+      return nil
+    }
+  }
 }
 
 struct TextColumn: Identifiable, Equatable {
@@ -89,6 +98,12 @@ extension Array where Element == TextColumn {
     guard indices.contains(index) else { return false }
 
     return self[index].value != TextType(value)
+  }
+
+  func digitOrdinal(at index: Int) -> Int? {
+    guard indices.contains(index), self[index].value.isNumber else { return nil }
+
+    return self[..<index].filter(\.value.isNumber).count
   }
 
   mutating func set(_ value: Character, index: Int) {

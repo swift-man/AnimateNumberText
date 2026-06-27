@@ -30,7 +30,12 @@ public struct AnimateNumberText: View {
 
   @State
   private var displayedString: String?
-  
+
+  /// Continuous reel positions keyed by digit column id. Used by `.reel`
+  /// animations so each digit can spin through multiple 0–9 turns.
+  @State
+  private var reelPositions: [UUID: Double] = [:]
+
   /// Creates an animated number text view.
   ///
   /// - Parameters:
@@ -104,7 +109,7 @@ public struct AnimateNumberText: View {
             .fontWeight(weight)
             .foregroundColor(textColor)
         case .number:
-          digitColumn(for: column.value)
+          digitColumn(for: column)
         }
       }
     }
@@ -137,6 +142,7 @@ public struct AnimateNumberText: View {
     guard displayedString == nil else { return false }
 
     animationRange = stringValue.map { TextColumn(value: TextType($0)) }
+    synchronizeReelPositions()
     displayedString = stringValue
     return true
   }
@@ -145,10 +151,26 @@ public struct AnimateNumberText: View {
   private func resizeAnimationRange(to stringValue: String) {
     withoutAnimation {
       animationRange.resizeForAnimation(to: stringValue)
+      synchronizeReelPositions()
     }
   }
 
-  private func digitColumn(for textType: TextType) -> some View {
+  @ViewBuilder
+  private func digitColumn(for column: TextColumn) -> some View {
+    if animation.isReel {
+      let number = column.value.digitValue ?? 0
+      let position = reelPositions[column.id] ?? Double(number)
+
+      ReelDigitColumn(position: position,
+                      font: font,
+                      weight: weight,
+                      textColor: textColor)
+    } else {
+      smoothDigitColumn(for: column.value)
+    }
+  }
+
+  private func smoothDigitColumn(for textType: TextType) -> some View {
     // Measure every digit so proportional fonts use the widest glyph without horizontal bleed.
     ZStack {
       ForEach(0...9, id: \.self) { number in
@@ -183,7 +205,7 @@ public struct AnimateNumberText: View {
 
   @MainActor
   private func settingAnimationRange(_ string: String, isAnimate: Bool) {
-    let characters = Array(string)
+    let characters = Swift.Array<Character>(string)
     let immediateUpdates = characters.enumerated().filter { index, value in
       animationRange.needsUpdate(to: value, index: index)
         && (!isAnimate || !animationRange.canAnimateDigitChange(to: value, index: index))
@@ -199,16 +221,63 @@ public struct AnimateNumberText: View {
 
     guard isAnimate else { return }
 
+    if animation.isReel {
+      settingReelAnimationRange(characters)
+    } else {
+      settingSmoothAnimationRange(characters)
+    }
+  }
+
+  @MainActor
+  private func settingSmoothAnimationRange(_ characters: [Character]) {
     for (index, value) in characters.enumerated()
       where animationRange.needsUpdate(to: value, index: index)
         && animationRange.canAnimateDigitChange(to: value, index: index) {
-      // IF First Value = 1
-      // Then Offset will be Applied for -1
-      // So the text will move up to show 1 Value
-      withAnimation(animation.digitAnimation(at: index)) {
+      let digitOrdinal = animationRange.digitOrdinal(at: index) ?? index
+
+      withAnimation(animation.digitAnimation(at: digitOrdinal)) {
         animationRange.set(value, index: index)
       }
     }
+  }
+
+  @MainActor
+  private func settingReelAnimationRange(_ characters: [Character]) {
+    synchronizeReelPositions()
+
+    for (index, value) in characters.enumerated()
+      where animationRange.canAnimateDigitChange(to: value, index: index) {
+      guard let digit = TextType(value).digitValue,
+            let digitOrdinal = animationRange.digitOrdinal(at: index) else {
+        continue
+      }
+
+      let columnID = animationRange[index].id
+      let currentPosition = reelPositions[columnID]
+        ?? Double(animationRange[index].value.digitValue ?? digit)
+      let targetPosition = animation.reelTargetPosition(from: currentPosition,
+                                                        to: digit,
+                                                        ordinal: digitOrdinal)
+
+      withAnimation(animation.digitAnimation(at: digitOrdinal)) {
+        reelPositions[columnID] = targetPosition
+        animationRange.set(value, index: index)
+      }
+    }
+  }
+
+  @MainActor
+  private func synchronizeReelPositions() {
+    guard animation.isReel else { return }
+
+    var nextPositions: [UUID: Double] = [:]
+
+    for column in animationRange {
+      guard let digit = column.value.digitValue else { continue }
+      nextPositions[column.id] = reelPositions[column.id] ?? Double(digit)
+    }
+
+    reelPositions = nextPositions
   }
 
   private func withoutAnimation(_ updates: () -> Void) {
@@ -228,5 +297,60 @@ public struct AnimateNumberText: View {
     case .number(let number):
       return -CGFloat(number) * height
     }
+  }
+}
+
+@MainActor
+@available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+private struct ReelDigitColumn: View, @preconcurrency Animatable {
+  var position: Double
+
+  let font: Font
+  let weight: Font.Weight
+  let textColor: Color
+
+  var animatableData: Double {
+    get { position }
+    set { position = newValue }
+  }
+
+  var body: some View {
+    ZStack {
+      ForEach(0...9, id: \.self) { number in
+        digitText(number)
+          .hidden()
+      }
+    }
+    .overlay {
+      GeometryReader { proxy in
+        let size = proxy.size
+        let basePosition = floor(position)
+        let baseDigit = Int(basePosition)
+        let fraction = position - basePosition
+
+        VStack(spacing: 0) {
+          ForEach(-1...1, id: \.self) { offset in
+            digitText(wrappedDigit(baseDigit + offset))
+              .frame(width: size.width,
+                     height: size.height,
+                     alignment: .center)
+          }
+        }
+        .offset(y: -(CGFloat(fraction) + 1) * size.height)
+      }
+      .clipped()
+    }
+  }
+
+  private func digitText(_ number: Int) -> some View {
+    Text("\(number)")
+      .font(font)
+      .fontWeight(weight)
+      .foregroundColor(textColor)
+  }
+
+  private func wrappedDigit(_ value: Int) -> Int {
+    let remainder = value % 10
+    return remainder >= 0 ? remainder : remainder + 10
   }
 }

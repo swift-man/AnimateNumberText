@@ -172,6 +172,17 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  @MainActor
+  func readOnlyValueInitializerAcceptsReelAnimation() {
+    let view = AnimateNumberText(value: 301.9,
+                                 animation: .reel(duration: 0.9,
+                                                  revolutions: 1,
+                                                  stagger: 0.18))
+
+    #expect(String(describing: type(of: view)) == "AnimateNumberText")
+  }
+
+  @Test
   func resizeForAnimationUsesStablePlaceholders() {
     var columns = [
       TextColumn(value: .number(0)),
@@ -266,6 +277,26 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func digitOrdinalSkipsFormattedCharacters() {
+    let columns = [
+      TextColumn(value: .number(3)),
+      TextColumn(value: .number(0)),
+      TextColumn(value: .number(1)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(9)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
+
+    #expect(columns.digitOrdinal(at: 0) == 0)
+    #expect(columns.digitOrdinal(at: 1) == 1)
+    #expect(columns.digitOrdinal(at: 2) == 2)
+    #expect(columns.digitOrdinal(at: 3) == nil)
+    #expect(columns.digitOrdinal(at: 4) == 3)
+  }
+
+  @Test
   func unchangedFormattedSuffixDoesNotNeedUpdate() {
     let columns = [
       TextColumn(value: .number(0)),
@@ -284,5 +315,26 @@ struct AnimateNumberTextTests {
   func smoothAnimationConfiguration() {
     #expect(AnimateNumberTextAnimation.smooth() == .smooth(duration: 0.5))
     #expect(AnimateNumberTextAnimation.smooth(duration: 0.3) != .smooth(duration: 0.5))
+  }
+
+  @Test
+  func reelAnimationConfiguration() {
+    #expect(AnimateNumberTextAnimation.reel() == .reel(duration: 0.9,
+                                                       revolutions: 1,
+                                                       stagger: 0.18))
+    #expect(AnimateNumberTextAnimation.reel(revolutions: -1) == .reel(revolutions: 0))
+    #expect(AnimateNumberTextAnimation.reel(duration: 0.9) != .smooth(duration: 0.9))
+  }
+
+  @Test
+  func reelTargetPositionAlternatesDirectionAndSpinsUnchangedDigits() {
+    let animation = AnimateNumberTextAnimation.reel(duration: 0.9,
+                                                    revolutions: 1,
+                                                    stagger: 0.18)
+
+    #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 0) == 13)
+    #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 1) == -17)
+    #expect(animation.reelTargetPosition(from: 5, to: 5, ordinal: 0) == 15)
+    #expect(animation.reelTargetPosition(from: 5, to: 5, ordinal: 1) == -5)
   }
 }
