@@ -330,15 +330,27 @@ struct AnimateNumberTextTests {
   }
 
   @Test
-  func reelDigitDurationsStopAtQuarterSecondIntervals() {
-    let animation = AnimateNumberTextAnimation.reel(duration: 0.9,
+  func reelDigitDurationsTreatDurationAsTotalSettleTime() {
+    let animation = AnimateNumberTextAnimation.reel(duration: 2.5,
                                                     revolutions: 1,
                                                     settleInterval: 0.25)
 
-    #expect(abs(animation.digitDuration(at: 0) - 0.9) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 1) - 1.15) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 2) - 1.4) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 3) - 1.65) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 0, digitCount: 4) - 1.75) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 1, digitCount: 4) - 2.0) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 2, digitCount: 4) - 2.25) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 3, digitCount: 4) - 2.5) < 0.000_001)
+  }
+
+  @Test
+  func reelDigitDurationsClampToTotalDurationWhenIntervalIsTooLarge() {
+    let animation = AnimateNumberTextAnimation.reel(duration: 0.5,
+                                                    revolutions: 1,
+                                                    settleInterval: 0.25)
+
+    #expect(abs(animation.digitDuration(at: 0, digitCount: 4) - 0.0) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 1, digitCount: 4) - 0.0) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 2, digitCount: 4) - 0.25) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 3, digitCount: 4) - 0.5) < 0.000_001)
   }
 
   @Test

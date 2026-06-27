@@ -111,7 +111,8 @@ public struct AnimateNumberText: View {
             .foregroundColor(textColor)
         case .number:
           digitColumn(for: renderedColumn.column,
-                      digitOrdinal: renderedColumn.digitOrdinal)
+                      digitOrdinal: renderedColumn.digitOrdinal,
+                      digitCount: renderedColumn.digitCount)
         }
       }
     }
@@ -159,6 +160,7 @@ public struct AnimateNumberText: View {
 
   private var renderedColumns: [RenderedTextColumn] {
     var digitOrdinal = 0
+    let digitCount = animationRange.filter(\.value.isNumber).count
 
     return animationRange.map { column in
       let ordinal = column.value.isNumber ? digitOrdinal : nil
@@ -168,12 +170,13 @@ public struct AnimateNumberText: View {
       }
 
       return RenderedTextColumn(column: column,
-                                digitOrdinal: ordinal)
+                                digitOrdinal: ordinal,
+                                digitCount: digitCount)
     }
   }
 
   @ViewBuilder
-  private func digitColumn(for column: TextColumn, digitOrdinal: Int?) -> some View {
+  private func digitColumn(for column: TextColumn, digitOrdinal: Int?, digitCount: Int) -> some View {
     if animation.isReel {
       let number = column.value.digitValue ?? 0
       let position = reelPositions[column.id] ?? Double(number)
@@ -183,7 +186,8 @@ public struct AnimateNumberText: View {
                       font: font,
                       weight: weight,
                       textColor: textColor)
-        .animation(animation.digitAnimation(at: ordinal), value: position)
+        .animation(animation.digitAnimation(at: ordinal,
+                                            digitCount: digitCount), value: position)
     } else {
       smoothDigitColumn(for: column.value)
     }
@@ -324,6 +328,7 @@ public struct AnimateNumberText: View {
 private struct RenderedTextColumn: Identifiable {
   let column: TextColumn
   let digitOrdinal: Int?
+  let digitCount: Int
 
   var id: UUID {
     column.id

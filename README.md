@@ -142,13 +142,14 @@ AnimateNumberText(value: $value,
 
 Use `.reel(duration:revolutions:settleInterval:)` when each digit should spin through
 0...9 before settling. Digit columns start together, alternate direction from
-left to right, and stop sequentially by adding the settle interval per digit.
+left to right, and stop sequentially by the settle interval. `duration` is the
+total time until the last digit settles.
 
 ```swift
 AnimateNumberText(value: $value,
                   textColor: $textColor,
                   stringFormatter: "%@ ms",
-                  animation: .reel(duration: 0.9,
+                  animation: .reel(duration: 2.5,
                                    revolutions: 1,
                                    settleInterval: 0.25))
 ```
