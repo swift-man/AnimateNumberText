@@ -183,6 +183,18 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  @MainActor
+  func readOnlyValueInitializerAcceptsGlyphBleed() {
+    let view = AnimateNumberText(value: 10.23,
+                                 glyphBleed: EdgeInsets(top: 2,
+                                                        leading: 4,
+                                                        bottom: 2,
+                                                        trailing: 4))
+
+    #expect(String(describing: type(of: view)) == "AnimateNumberText")
+  }
+
+  @Test
   func resizeForAnimationUsesStablePlaceholders() {
     var columns = [
       TextColumn(value: .number(0)),

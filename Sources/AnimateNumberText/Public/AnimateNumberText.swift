@@ -24,6 +24,7 @@ public struct AnimateNumberText: View {
 
   // MARK: - Animation Properties
   private let animation: AnimateNumberTextAnimation
+  private let glyphBleed: EdgeInsets
 
   @State
   private var animationRange: [TextColumn] = []
@@ -46,6 +47,7 @@ public struct AnimateNumberText: View {
   ///   - numberFormatter: An optional formatter for numeric presentation.
   ///   - stringFormatter: An optional string format, such as `"%@ ms"`.
   ///   - animation: The animation configuration used for digit updates.
+  ///   - glyphBleed: Extra clipping space for custom fonts whose glyphs draw outside their column.
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public init(
     font: Font = .largeTitle,
@@ -54,13 +56,15 @@ public struct AnimateNumberText: View {
     textColor: Binding<Color>,
     numberFormatter: NumberFormatter? = nil,
     stringFormatter: String? = nil,
-    animation: AnimateNumberTextAnimation = .smooth()
+    animation: AnimateNumberTextAnimation = .smooth(),
+    glyphBleed: EdgeInsets = EdgeInsets()
   ) {
     self.font = font
     self.weight = weight
     self._value = value
     self._textColor = textColor
     self.animation = animation
+    self.glyphBleed = glyphBleed.sanitizedGlyphBleed
     self.formatter = AnimateNumberTextFormatter(numberFormatter: numberFormatter,
                                                 stringFormatter: stringFormatter)
   }
@@ -78,6 +82,7 @@ public struct AnimateNumberText: View {
   ///   - numberFormatter: An optional formatter for numeric presentation.
   ///   - stringFormatter: An optional string format, such as `"%@ ms"`.
   ///   - animation: The animation configuration used for digit updates.
+  ///   - glyphBleed: Extra clipping space for custom fonts whose glyphs draw outside their column.
   @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
   public init(
     font: Font = .largeTitle,
@@ -86,7 +91,8 @@ public struct AnimateNumberText: View {
     textColor: Color = .primary,
     numberFormatter: NumberFormatter? = nil,
     stringFormatter: String? = nil,
-    animation: AnimateNumberTextAnimation = .smooth()
+    animation: AnimateNumberTextAnimation = .smooth(),
+    glyphBleed: EdgeInsets = EdgeInsets()
   ) {
     self.init(font: font,
               weight: weight,
@@ -94,7 +100,8 @@ public struct AnimateNumberText: View {
               textColor: .constant(textColor),
               numberFormatter: numberFormatter,
               stringFormatter: stringFormatter,
-              animation: animation)
+              animation: animation,
+              glyphBleed: glyphBleed)
   }
 
   public var body: some View {
@@ -185,7 +192,8 @@ public struct AnimateNumberText: View {
       ReelDigitColumn(position: position,
                       font: font,
                       weight: weight,
-                      textColor: textColor)
+                      textColor: textColor,
+                      glyphBleed: glyphBleed)
         .animation(animation.digitAnimation(at: ordinal,
                                             digitCount: digitCount), value: position)
     } else {
@@ -215,7 +223,7 @@ public struct AnimateNumberText: View {
         }
         .offset(y: settingOffset(for: textType, height: size.height))
       }
-      .clipped()
+      .clipShape(GlyphBleedClipShape(glyphBleed: glyphBleed))
     }
   }
 
@@ -342,6 +350,7 @@ private struct ReelDigitColumn: View, @preconcurrency Animatable {
   let font: Font
   let weight: Font.Weight
   let textColor: Color
+  let glyphBleed: EdgeInsets
 
   var animatableData: Double {
     get { position }
@@ -372,7 +381,7 @@ private struct ReelDigitColumn: View, @preconcurrency Animatable {
         }
         .offset(y: -(CGFloat(fraction) + 1) * size.height)
       }
-      .clipped()
+      .clipShape(GlyphBleedClipShape(glyphBleed: glyphBleed))
     }
   }
 
@@ -386,5 +395,27 @@ private struct ReelDigitColumn: View, @preconcurrency Animatable {
   private func wrappedDigit(_ value: Int) -> Int {
     let remainder = value % 10
     return remainder >= 0 ? remainder : remainder + 10
+  }
+}
+
+private extension EdgeInsets {
+  var sanitizedGlyphBleed: EdgeInsets {
+    EdgeInsets(top: Swift.max(0, top),
+               leading: Swift.max(0, leading),
+               bottom: Swift.max(0, bottom),
+               trailing: Swift.max(0, trailing))
+  }
+}
+
+private struct GlyphBleedClipShape: Shape {
+  let glyphBleed: EdgeInsets
+
+  func path(in rect: CGRect) -> Path {
+    let expandedRect = CGRect(x: rect.minX - glyphBleed.leading,
+                              y: rect.minY - glyphBleed.top,
+                              width: rect.width + glyphBleed.leading + glyphBleed.trailing,
+                              height: rect.height + glyphBleed.top + glyphBleed.bottom)
+
+    return Path(expandedRect)
   }
 }
