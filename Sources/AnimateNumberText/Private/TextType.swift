@@ -12,7 +12,7 @@ enum TextType: Equatable {
   case number(Int)
 
   init(_ value: Character) {
-    if let number = value.wholeNumberValue {
+    if let number = value.asciiDigitValue {
       self = .number(number)
     } else {
       self = .string(String(value))
@@ -39,7 +39,7 @@ struct TextColumn: Identifiable, Equatable {
   }
 
   init(placeholderFor value: Character) {
-    if value.wholeNumberValue != nil {
+    if value.asciiDigitValue != nil {
       self.init(value: .number(0))
     } else {
       self.init(value: TextType(value))
@@ -49,7 +49,8 @@ struct TextColumn: Identifiable, Equatable {
 
 extension Array where Element == TextColumn {
   mutating func resizeForAnimation(to string: String) {
-    let targetCharacters = string.map { $0 }
+    let targetCharacters = Swift.Array<Character>(string)
+    // Equal-length updates keep their columns; settingAnimationRange handles value changes.
     guard targetCharacters.count != count else { return }
 
     let currentColumns = self
@@ -63,8 +64,10 @@ extension Array where Element == TextColumn {
       targetColumns[targetIndex] = preservedColumn
     }
 
-    for (index, character) in targetCharacters.enumerated() where !TextType(character).isNumber {
+    for (index, character) in targetCharacters.enumerated() {
       let targetValue = TextType(character)
+      guard !targetValue.isNumber else { continue }
+
       if currentColumns.indices.contains(index),
          currentColumns[index].value == targetValue {
         targetColumns[index] = currentColumns[index]
@@ -96,5 +99,18 @@ extension Array where Element == TextColumn {
     guard self.indices.contains(index) else { return }
 
     self[index].value = value
+  }
+}
+
+private extension Character {
+  var asciiDigitValue: Int? {
+    guard unicodeScalars.count == 1,
+          let scalar = unicodeScalars.first,
+          scalar.value >= 48,
+          scalar.value <= 57 else {
+      return nil
+    }
+
+    return Int(scalar.value - 48)
   }
 }

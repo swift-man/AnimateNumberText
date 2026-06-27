@@ -225,6 +225,38 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func resizeForAnimationKeepsFormattedSuffixAlignedWhenShrinking() {
+    var columns = [
+      TextColumn(value: .number(3)),
+      TextColumn(value: .number(0)),
+      TextColumn(value: .number(6)),
+      TextColumn(value: .string(".")),
+      TextColumn(value: .number(2)),
+      TextColumn(value: .number(6)),
+      TextColumn(value: .string(" ")),
+      TextColumn(value: .string("m")),
+      TextColumn(value: .string("s"))
+    ]
+
+    columns.resizeForAnimation(to: "0 ms")
+
+    #expect(columns.map(\.value) == [
+      .number(6),
+      .string(" "),
+      .string("m"),
+      .string("s")
+    ])
+  }
+
+  @Test
+  func textTypeOnlyTreatsASCIIDigitsAsAnimatedNumbers() {
+    #expect(TextType("3") == .number(3))
+    #expect(TextType("٣") == .string("٣"))
+    #expect(TextType("Ⅻ") == .string("Ⅻ"))
+    #expect(TextColumn(placeholderFor: "٣").value == .string("٣"))
+  }
+
+  @Test
   func digitAnimationOnlyAppliesToDigitColumns() {
     let columns = [
       TextColumn(value: .number(0)),
