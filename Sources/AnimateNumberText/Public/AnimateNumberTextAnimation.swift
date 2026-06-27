@@ -26,7 +26,7 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
     AnimateNumberTextAnimation(style: .smooth(duration: duration))
   }
 
-  /// Creates a slot-machine reel animation.
+  /// Creates a rolling digit animation.
   ///
   /// Every digit spins through 0–9, neighbouring places spin in opposite
   /// directions, and the places come to rest one after another from left to
@@ -38,12 +38,23 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   ///     landing on its value.
   ///   - stagger: The extra settle time added per digit so places stop in
   ///     sequence rather than all at once.
-  public static func reel(duration: TimeInterval = 0.9,
+  public static func roll(_ duration: TimeInterval = 0.9,
                           revolutions: Int = 1,
                           stagger: TimeInterval = 0.18) -> AnimateNumberTextAnimation {
     AnimateNumberTextAnimation(style: .reel(duration: duration,
                                             revolutions: Swift.max(0, revolutions),
                                             stagger: stagger))
+  }
+
+  /// Creates a slot-machine reel animation.
+  ///
+  /// Prefer ``roll(_:revolutions:stagger:)`` at new call sites.
+  public static func reel(duration: TimeInterval = 0.9,
+                          revolutions: Int = 1,
+                          stagger: TimeInterval = 0.18) -> AnimateNumberTextAnimation {
+    roll(duration,
+         revolutions: revolutions,
+         stagger: stagger)
   }
 
   private init(style: Style) {

@@ -318,6 +318,18 @@ struct AnimateNumberTextTests {
   }
 
   @Test
+  func rollAnimationConfiguration() {
+    #expect(AnimateNumberTextAnimation.roll() == .reel(duration: 0.9,
+                                                       revolutions: 1,
+                                                       stagger: 0.18))
+    #expect(AnimateNumberTextAnimation.roll(2.5) == .reel(duration: 2.5,
+                                                          revolutions: 1,
+                                                          stagger: 0.18))
+    #expect(AnimateNumberTextAnimation.roll(revolutions: -1) == .reel(revolutions: 0))
+    #expect(AnimateNumberTextAnimation.roll(0.9) != .smooth(duration: 0.9))
+  }
+
+  @Test
   func reelAnimationConfiguration() {
     #expect(AnimateNumberTextAnimation.reel() == .reel(duration: 0.9,
                                                        revolutions: 1,
