@@ -149,7 +149,7 @@ struct ScoreView: View {
 }
 ```
 
-Use `.roll(_:revolutions:settleInterval:)` to make each digit spin through 0...9
+Use `.reel(duration:revolutions:settleInterval:)` to make each digit spin through 0...9
 before settling. Digit columns start together, alternate direction from left to
 right, and stop sequentially by adding the settle interval per digit.
 
@@ -158,7 +158,7 @@ AnimateNumberText(
   value: $value,
   textColor: $textColor,
   stringFormatter: "%@ ms",
-  animation: .roll(0.9,
+  animation: .reel(duration: 0.9,
                    revolutions: 1,
                    settleInterval: 0.25)
 )

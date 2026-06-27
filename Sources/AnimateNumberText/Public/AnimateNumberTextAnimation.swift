@@ -26,7 +26,7 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
     AnimateNumberTextAnimation(style: .smooth(duration: duration))
   }
 
-  /// Creates a rolling digit animation.
+  /// Creates a slot-machine reel animation.
   ///
   /// Every digit spins through 0–9, neighbouring places spin in opposite
   /// directions, and the places come to rest one after another from left to
@@ -39,23 +39,12 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   ///   - settleInterval: The extra settle time added per digit. With the default
   ///     `0.25`, a value like `301.9` settles as `3`, then `0`, then `1`,
   ///     then `9` at quarter-second intervals.
-  public static func roll(_ duration: TimeInterval = 0.9,
+  public static func reel(duration: TimeInterval = 0.9,
                           revolutions: Int = 1,
                           settleInterval: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
     AnimateNumberTextAnimation(style: .reel(duration: duration,
                                             revolutions: Swift.max(0, revolutions),
                                             settleInterval: settleInterval))
-  }
-
-  /// Creates a slot-machine reel animation.
-  ///
-  /// Prefer ``roll(_:revolutions:settleInterval:)`` at new call sites.
-  public static func reel(duration: TimeInterval = 0.9,
-                          revolutions: Int = 1,
-                          settleInterval: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
-    roll(duration,
-         revolutions: revolutions,
-         settleInterval: settleInterval)
   }
 
   private init(style: Style) {
