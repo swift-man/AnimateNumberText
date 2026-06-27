@@ -175,9 +175,9 @@ struct AnimateNumberTextTests {
   @MainActor
   func readOnlyValueInitializerAcceptsReelAnimation() {
     let view = AnimateNumberText(value: 301.9,
-                                 animation: .reel(duration: 0.9,
-                                                  revolutions: 1,
-                                                  settleInterval: 0.25))
+                                 animation: .reel(spinningDuration: 0.9,
+                                                  settleDuration: 0.25,
+                                                  revolutions: 1))
 
     #expect(String(describing: type(of: view)) == "AnimateNumberText")
   }
@@ -319,45 +319,42 @@ struct AnimateNumberTextTests {
 
   @Test
   func reelAnimationConfiguration() {
-    #expect(AnimateNumberTextAnimation.reel() == .reel(duration: 0.9,
-                                                       revolutions: 1,
-                                                       settleInterval: 0.25))
-    #expect(AnimateNumberTextAnimation.reel(duration: 2.5) == .reel(duration: 2.5,
-                                                                    revolutions: 1,
-                                                                    settleInterval: 0.25))
+    #expect(AnimateNumberTextAnimation.reel() == .reel(spinningDuration: 0.9,
+                                                       settleDuration: 0.25,
+                                                       revolutions: 1))
+    #expect(AnimateNumberTextAnimation.reel(spinningDuration: 1.5) == .reel(spinningDuration: 1.5,
+                                                                            settleDuration: 0.25,
+                                                                            revolutions: 1))
     #expect(AnimateNumberTextAnimation.reel(revolutions: -1) == .reel(revolutions: 0))
-    #expect(AnimateNumberTextAnimation.reel(duration: 0.9) != .smooth(duration: 0.9))
+    #expect(AnimateNumberTextAnimation.reel(spinningDuration: 0.9) != .smooth(duration: 0.9))
   }
 
   @Test
-  func reelDigitDurationsTreatDurationAsTotalSettleTime() {
-    let animation = AnimateNumberTextAnimation.reel(duration: 2.5,
-                                                    revolutions: 1,
-                                                    settleInterval: 0.25)
+  func reelDigitDurationsTreatSpinningDurationAsFirstSettleTime() {
+    let animation = AnimateNumberTextAnimation.reel(spinningDuration: 1.5,
+                                                    settleDuration: 0.25,
+                                                    revolutions: 1)
 
-    #expect(abs(animation.digitDuration(at: 0, digitCount: 4) - 1.75) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 1, digitCount: 4) - 2.0) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 2, digitCount: 4) - 2.25) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 3, digitCount: 4) - 2.5) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 0, digitCount: 4) - 1.5) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 1, digitCount: 4) - 1.75) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 2, digitCount: 4) - 2.0) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 3, digitCount: 4) - 2.25) < 0.000_001)
   }
 
   @Test
-  func reelDigitDurationsClampToTotalDurationWhenIntervalIsTooLarge() {
-    let animation = AnimateNumberTextAnimation.reel(duration: 0.5,
-                                                    revolutions: 1,
-                                                    settleInterval: 0.25)
+  func reelDigitDurationsClampOrdinalToAvailableDigits() {
+    let animation = AnimateNumberTextAnimation.reel(spinningDuration: 1.5,
+                                                    settleDuration: 0.25,
+                                                    revolutions: 1)
 
-    #expect(abs(animation.digitDuration(at: 0, digitCount: 4) - 0.0) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 1, digitCount: 4) - 0.0) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 2, digitCount: 4) - 0.25) < 0.000_001)
-    #expect(abs(animation.digitDuration(at: 3, digitCount: 4) - 0.5) < 0.000_001)
+    #expect(abs(animation.digitDuration(at: 10, digitCount: 4) - 2.25) < 0.000_001)
   }
 
   @Test
   func reelTargetPositionAlternatesDirectionAndSpinsUnchangedDigits() {
-    let animation = AnimateNumberTextAnimation.reel(duration: 0.9,
-                                                    revolutions: 1,
-                                                    settleInterval: 0.25)
+    let animation = AnimateNumberTextAnimation.reel(spinningDuration: 0.9,
+                                                    settleDuration: 0.25,
+                                                    revolutions: 1)
 
     #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 0) == 13)
     #expect(animation.reelTargetPosition(from: 0, to: 3, ordinal: 1) == -17)

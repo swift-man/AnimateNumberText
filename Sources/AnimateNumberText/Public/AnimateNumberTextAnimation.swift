@@ -13,7 +13,7 @@ import SwiftUI
 public struct AnimateNumberTextAnimation: Equatable, Sendable {
   enum Style: Equatable, Sendable {
     case smooth(duration: TimeInterval)
-    case reel(duration: TimeInterval, revolutions: Int, settleInterval: TimeInterval)
+    case reel(spinningDuration: TimeInterval, settleDuration: TimeInterval, revolutions: Int)
   }
 
   let style: Style
@@ -33,18 +33,20 @@ public struct AnimateNumberTextAnimation: Equatable, Sendable {
   /// right, each decelerating to a stop.
   ///
   /// - Parameters:
-  ///   - duration: The total time until the last digit settles.
+  ///   - spinningDuration: The time the first (leftmost) digit spins before
+  ///     landing on its value.
+  ///   - settleDuration: The time between each digit settling. With
+  ///     `spinningDuration: 1.5` and `settleDuration: 0.25`, a value like
+  ///     `301.9` settles as `3`, then `0`, then `1`, then `9` at quarter-second
+  ///     intervals.
   ///   - revolutions: The number of full 0–9 turns each digit makes before
   ///     landing on its value.
-  ///   - settleInterval: The time between each digit settling. With
-  ///     `duration: 2.5` and `settleInterval: 0.25`, a value like `301.9`
-  ///     settles as `3`, then `0`, then `1`, then `9`, ending at 2.5 seconds.
-  public static func reel(duration: TimeInterval = 0.9,
-                          revolutions: Int = 1,
-                          settleInterval: TimeInterval = 0.25) -> AnimateNumberTextAnimation {
-    AnimateNumberTextAnimation(style: .reel(duration: duration,
-                                            revolutions: Swift.max(0, revolutions),
-                                            settleInterval: settleInterval))
+  public static func reel(spinningDuration: TimeInterval = 0.9,
+                          settleDuration: TimeInterval = 0.25,
+                          revolutions: Int = 1) -> AnimateNumberTextAnimation {
+    AnimateNumberTextAnimation(style: .reel(spinningDuration: spinningDuration,
+                                            settleDuration: settleDuration,
+                                            revolutions: Swift.max(0, revolutions)))
   }
 
   private init(style: Style) {
@@ -62,7 +64,7 @@ extension AnimateNumberTextAnimation {
 
   /// The number of full 0–9 turns each reel makes before landing.
   var reelRevolutions: Int {
-    if case .reel(_, let revolutions, _) = style { return revolutions }
+    if case .reel(_, _, let revolutions) = style { return revolutions }
     return 0
   }
 
@@ -98,9 +100,9 @@ extension AnimateNumberTextAnimation {
                                 dampingFraction: 1,
                                 blendDuration: 0)
 
-    case .reel(let duration, _, let settleInterval):
-      return .easeOut(duration: digitDuration(duration,
-                                              settleInterval: settleInterval,
+    case .reel(let spinningDuration, let settleDuration, _):
+      return .easeOut(duration: digitDuration(spinningDuration,
+                                              settleDuration: settleDuration,
                                               ordinal: ordinal,
                                               digitCount: digitCount))
     }
@@ -110,9 +112,9 @@ extension AnimateNumberTextAnimation {
     switch style {
     case .smooth(let duration):
       return sanitized(duration)
-    case .reel(let duration, _, let settleInterval):
-      return digitDuration(duration,
-                           settleInterval: settleInterval,
+    case .reel(let spinningDuration, let settleDuration, _):
+      return digitDuration(spinningDuration,
+                           settleDuration: settleDuration,
                            ordinal: ordinal,
                            digitCount: digitCount)
     }
@@ -123,17 +125,16 @@ extension AnimateNumberTextAnimation {
     return Swift.max(0, value)
   }
 
-  private func digitDuration(_ duration: TimeInterval,
-                             settleInterval: TimeInterval,
+  private func digitDuration(_ spinningDuration: TimeInterval,
+                             settleDuration: TimeInterval,
                              ordinal: Int,
                              digitCount: Int) -> TimeInterval {
-    let totalDuration = sanitized(duration)
-    let interval = sanitized(settleInterval)
+    let firstDigitDuration = sanitized(spinningDuration)
+    let interval = sanitized(settleDuration)
     let lastOrdinal = Swift.max(0, digitCount - 1)
     let clampedOrdinal = Swift.max(0, Swift.min(ordinal, lastOrdinal))
-    let remainingDigits = lastOrdinal - clampedOrdinal
 
-    return Swift.max(0, totalDuration - Double(remainingDigits) * interval)
+    return firstDigitDuration + Double(clampedOrdinal) * interval
   }
 
   private func reelDistance(from currentDigit: Double, to targetDigit: Double, ordinal: Int) -> Double {
