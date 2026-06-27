@@ -277,7 +277,7 @@ struct AnimateNumberTextTests {
   }
 
   @Test
-  func digitOrdinalSkipsFormattedCharacters() {
+  func digitOrdinalsByIndexSkipsFormattedCharacters() {
     let columns = [
       TextColumn(value: .number(3)),
       TextColumn(value: .number(0)),
@@ -289,11 +289,6 @@ struct AnimateNumberTextTests {
       TextColumn(value: .string("s"))
     ]
 
-    #expect(columns.digitOrdinal(at: 0) == 0)
-    #expect(columns.digitOrdinal(at: 1) == 1)
-    #expect(columns.digitOrdinal(at: 2) == 2)
-    #expect(columns.digitOrdinal(at: 3) == nil)
-    #expect(columns.digitOrdinal(at: 4) == 3)
     #expect(columns.digitOrdinalsByIndex() == [
       0: 0,
       1: 1,

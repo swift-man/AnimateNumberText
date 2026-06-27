@@ -95,7 +95,6 @@ extension Array where Element == TextColumn {
 
   func digitOrdinalsByIndex() -> [Int: Int] {
     var ordinalsByIndex: [Int: Int] = [:]
-    ordinalsByIndex.reserveCapacity(digitCount)
     var digitOrdinal = 0
 
     for index in indices where self[index].value.isNumber {
@@ -172,12 +171,6 @@ extension Array where Element == TextColumn {
     guard indices.contains(index) else { return false }
 
     return self[index].value != value
-  }
-
-  func digitOrdinal(at index: Int) -> Int? {
-    guard indices.contains(index), self[index].value.isNumber else { return nil }
-
-    return self[..<index].filter(\.value.isNumber).count
   }
 
   mutating func set(_ value: Character, index: Int) {
