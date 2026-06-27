@@ -49,7 +49,7 @@ public struct AnimateNumberText: View {
     textColor: Binding<Color>,
     numberFormatter: NumberFormatter? = nil,
     stringFormatter: String? = nil,
-    animation: AnimateNumberTextAnimation = .default
+    animation: AnimateNumberTextAnimation = .smooth()
   ) {
     self.font = font
     self.weight = weight
@@ -81,7 +81,7 @@ public struct AnimateNumberText: View {
     textColor: Color = .primary,
     numberFormatter: NumberFormatter? = nil,
     stringFormatter: String? = nil,
-    animation: AnimateNumberTextAnimation = .default
+    animation: AnimateNumberTextAnimation = .smooth()
   ) {
     self.init(font: font,
               weight: weight,
@@ -123,17 +123,7 @@ public struct AnimateNumberText: View {
     }
     guard displayedString != stringValue || animationRange.count != stringValue.count else { return }
 
-    resizeAnimationRange(to: stringValue,
-                         animation: animation.resizeAnimation)
-
-    let resizeDelayNanoseconds = animation.resizeDelayNanoseconds
-    if resizeDelayNanoseconds > 0 {
-      do {
-        try await Task.sleep(nanoseconds: resizeDelayNanoseconds)
-      } catch {
-        return
-      }
-    }
+    resizeAnimationRange(to: stringValue)
 
     guard animationRange.count == stringValue.count else { return }
 
@@ -152,17 +142,9 @@ public struct AnimateNumberText: View {
   }
 
   @MainActor
-  private func resizeAnimationRange(to stringValue: String, animation: Animation?) {
-    let update = {
+  private func resizeAnimationRange(to stringValue: String) {
+    withoutAnimation {
       animationRange.resizeForAnimation(to: stringValue)
-    }
-
-    if let animation {
-      withAnimation(animation) {
-        update()
-      }
-    } else {
-      withoutAnimation(update)
     }
   }
 
