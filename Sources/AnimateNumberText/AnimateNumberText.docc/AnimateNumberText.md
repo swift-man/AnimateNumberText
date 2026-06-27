@@ -177,9 +177,9 @@ default layout for regular fonts.
 
 ```swift
 AnimateNumberText(
+  font: .custom("SignPainter", size: 48),
   value: $value,
   textColor: $textColor,
-  font: .custom("SignPainter", size: 48),
   glyphBleed: EdgeInsets(top: 2,
                          leading: 4,
                          bottom: 2,

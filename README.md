@@ -165,9 +165,9 @@ Some script or brush fonts draw glyphs outside their measured digit column. Use
 default layout for regular fonts.
 
 ```swift
-AnimateNumberText(value: $value,
+AnimateNumberText(font: .custom("SignPainter", size: 48),
+                  value: $value,
                   textColor: $textColor,
-                  font: .custom("SignPainter", size: 48),
                   glyphBleed: EdgeInsets(top: 2,
                                          leading: 4,
                                          bottom: 2,
